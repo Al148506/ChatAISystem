@@ -1,29 +1,29 @@
-﻿body,
-html {
+﻿/* Estilos generales */
+body, html {
     margin: 0;
     padding: 0;
     height: 100%;
-    background: #1b1c3b !important; /* Fondo negro */
+    background: #1b1c3b; /* Fondo oscuro */
+    font-family: sans-serif; /* Fuente predeterminada */
+    color: white; /* Texto blanco por defecto */
 }
 
+/* Contenedor de la tarjeta de usuario */
 .user_card {
-    height: 550px;
-    width: 350px;
-    margin-top: auto;
-    margin-bottom: auto;
+    height: 600px;
+    width: 370px;
+    margin: auto; /* Centrado vertical y horizontal */
     background: #1e3a8a; /* Azul rey */
-    position: relative;
     display: flex;
     justify-content: center;
     flex-direction: column;
-    padding: 10px;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    -moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-    border-radius: 5px;
-    color: white; /* Texto blanco */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
+    border-radius: 10px; /* Bordes más redondeados */
+    position: relative;
 }
 
+/* Contenedor del logo de la marca */
 .brand_logo_container {
     position: absolute;
     height: 170px;
@@ -34,60 +34,97 @@ html {
     text-align: center;
 }
 
+/* Estilo del logo */
 .brand_logo {
     height: 150px;
     width: 150px;
     border-radius: 50%;
+    object-fit: cover; /* Asegura que la imagen se ajuste correctamente */
 }
 
+/* Credenciales de demostración */
 .demo-credentials {
-    margin-top: 70px; /* Ajusta este valor según sea necesario */
-    padding: 5px;
+    margin-top: 50px;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    margin-bottom: -30px;
 }
 
+/* Contenedor del formulario */
 .form_container {
-    margin-top: 0px;
+    margin-top: 50px;
 }
 
+/* Botón de inicio de sesión */
 .login_btn {
     width: 100%;
-    background: #c0392b !important;
-    color: white !important;
-    margin-bottom: 20px;
+    background: #c0392b; /* Rojo oscuro */
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-bottom:15px;
 }
 
-    .login_btn:focus {
-        box-shadow: none !important;
-        outline: 0px !important;
+    .login_btn:hover {
+        background: #a5281b; /* Rojo más oscuro al pasar el mouse */
     }
 
+    .login_btn:focus {
+        box-shadow: none;
+        outline: none;
+    }
+
+/* Contenedor del formulario de inicio de sesión */
 .login_container {
     padding: 0 2rem;
 }
 
+/* Estilo para los íconos de los inputs */
 .input-group-text {
-    background: #c0392b !important;
-    color: white !important;
-    border: 0 !important;
+    background: #c0392b; /* Rojo oscuro */
+    color: white;
+    border: none;
     border-radius: 0.25rem 0 0 0.25rem !important;
+    padding: 10px;
 }
 
+/* Estilo para los inputs */
 .input_user,
-.input_pass:focus {
-    box-shadow: none !important;
-    outline: 0px !important;
+.input_pass {
+    border: none;
+    border-radius: 0 5px 5px 0;
+    padding: 9px;
+    width: 100%;
+    color: black;
 }
 
+    .input_user:focus,
+    .input_pass:focus {
+        box-shadow: 0 0 0 2px #64b5f6; /* Azul claro */
+        outline: none; /* Elimina el contorno predeterminado */
+    }
+
+/* Estilo para el checkbox personalizado */
 .custom-checkbox .custom-control-input:checked ~ .custom-control-label::before {
-    background-color: #c0392b !important;
+    background-color: #c0392b; /* Rojo oscuro */
 }
 
+/* Mensaje de error */
 .errorMessage {
-    font-family: sans-serif;
     font-size: 14px;
     margin-top: 15px;
+    padding: 8px;
+    color: white;
+    background: #c0392b; /* Rojo oscuro */
+    border-radius: 5px;
+    text-align: center;
+}
+.links {
+    background-color: #c0392b;
     padding: 10px;
-    color: #ffffff; /* Texto blanco */
-    background: #c0392b;
-    border: none;
+    border-radius: 5px;
 }

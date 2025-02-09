@@ -25,54 +25,56 @@ namespace ChatAISystem.Controllers
         [HttpPost]
         public async Task<IActionResult> RegisterAsync(RegisterViewModel model)
         {
-            var captchaResponse = Request.Form["g-recaptcha-response"];
-            var utilities = new Utilities();
-            if (string.IsNullOrEmpty(captchaResponse) || !await utilities.ValidateCaptcha(captchaResponse, _configuration))
+            var validationResponse = ValidateRegistration(model);
+            if (!validationResponse.success)
             {
-                return Json(new { success = false, message = "Por favor, resuelva el reCAPTCHA para continuar." });
+                return Json(validationResponse);
             }
 
-            // Validar si el correo está vacío o tiene formato incorrecto
-            if (string.IsNullOrWhiteSpace(model.Email) || !Utilities.IsValidEmail(model.Email))
+            try
             {
-                return Json(new { success = false, message = "Por favor, ingrese un correo electrónico válido." });
-            }
+                var captchaResponse = Request.Form["g-recaptcha-response"];
+                var utilities = new Utilities();
+                if (string.IsNullOrEmpty(captchaResponse) || !await utilities.ValidateCaptcha(captchaResponse, _configuration))
+                {
+                    return Json(new { success = false, message = "Por favor, resuelva el reCAPTCHA para continuar." });
+                }
+                var user = new User
+                {
+                    Username = model.Username,
+                    Email = model.Email,
+                    PasswordHash = Utilities.ConverterSha256(model.Password)
+                };
 
-            // Validar si la contraseña está vacía o no coincide
-            if (string.IsNullOrWhiteSpace(model.Password) || model.Password != model.ConfirmPassword)
-            {
-                return Json(new { success = false, message = "Por favor, ingrese una contraseña válida y asegúrese de que coincida con la confirmación." });
-            }
+                _context.Add(user);
+                await _context.SaveChangesAsync();
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    var user = new User()
-                    {
-                        Username = model.Username,
-                        Email = model.Email,
-                        PasswordHash = Utilities.ConverterSha256(model.Password)
-                    };
-                    _context.Add(user);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index));
-                }
-                catch (Exception ex)
-                {
-                    // Captura de errores y registro del mensaje
-                    ModelState.AddModelError(string.Empty, $"Error al guardar el producto: {ex.Message}");
-                    return View(model);
-                }
+                return Json(new { success = true, message = "Registro exitoso", redirectUrl = Url.Action("Index","Login") });
             }
-            else
+            catch (Exception ex)
             {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine($"Error: {error.ErrorMessage}");
-                }
-                return View(model);
+                return Json(new { success = false, message = $"Error al registrar usuario, intente con otro correo" });
             }
         }
+
+        // ✅ Método de validación reutilizable
+        private (bool success, string message) ValidateRegistration(RegisterViewModel model)
+        {
+       
+            if (string.IsNullOrWhiteSpace(model.Email) || !Utilities.IsValidEmail(model.Email))
+                return (false, "Por favor, ingrese un correo electrónico válido.");
+
+            if (string.IsNullOrWhiteSpace(model.Username))
+                return (false, "Por favor, ingrese un nombre de usuario.");
+
+            if (string.IsNullOrWhiteSpace(model.Password) || model.Password.Length < 6)
+                return (false, "La contraseña debe tener al menos 6 caracteres.");
+
+            if (model.Password != model.ConfirmPassword)
+                return (false, "Las contraseñas no coinciden.");
+
+            return (true, "Validación exitosa");
+        }
+
     }
 }
