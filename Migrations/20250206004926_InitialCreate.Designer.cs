@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChatAISystem.Migrations
 {
-    [DbContext(typeof(CharAidbContext))]
+    [DbContext(typeof(ChatAIDBContext))]
     [Migration("20250206004926_InitialCreate")]
     partial class InitialCreate
     {

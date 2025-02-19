@@ -7,9 +7,9 @@ namespace ChatAISystem.Controllers
     
     public class LoginController : Controller
     {
-        private readonly CharAidbContext _context;
+        private readonly ChatAIDBContext _context;
         private readonly IConfiguration _configuration;
-        public LoginController(CharAidbContext context, IConfiguration configuration)
+        public LoginController(ChatAIDBContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -38,11 +38,9 @@ namespace ChatAISystem.Controllers
                 {
                     return Json(new { success = false, message = "Por favor, ingrese su correo y contraseña." });
                 }
-
+                model.Email = model.Email.Trim();
                 model.PasswordHash = Utilities.ConverterSha256(model.PasswordHash);
-                var usersCount = await _context.Users.CountAsync();
-                Console.WriteLine($"Total Users in DB: {usersCount}");
-
+              
                 var result = await _context.Users
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Email == model.Email && r.PasswordHash == model.PasswordHash);
@@ -53,9 +51,11 @@ namespace ChatAISystem.Controllers
                 }
 
                 // Guardar sesión y redirigir
-                //HttpContext.Session.SetInt32("IdUser", result.Id);
-                //HttpContext.Session.SetString("UserMail", result.Email);
-                //HttpContext.Session.SetString("IdRol", result.Username);
+                HttpContext.Session.Clear(); // Limpiar cualquier sesión previa
+                HttpContext.Session.SetInt32("IdUser", result.Id);
+                HttpContext.Session.SetString("UserMail", result.Email);
+                HttpContext.Session.SetString("UserName", result.Username);
+                HttpContext.Response.Cookies.Append("SessionSecurity", Guid.NewGuid().ToString(), new CookieOptions { HttpOnly = true, Secure = true });
 
                 return Json(new { success = true, redirectUrl = Url.Action("Index", "Home") });
             }
@@ -65,9 +65,6 @@ namespace ChatAISystem.Controllers
                 return Json(new { success = false, message = "Ocurrió un error inesperado. Inténtelo de nuevo." });
             }
         }
-
-
-
       
     }
 }

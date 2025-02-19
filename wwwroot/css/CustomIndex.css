@@ -1,0 +1,68 @@
+﻿/* Estilos para la tabla */
+.table-custom {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    /* Encabezado de la tabla */
+    .table-custom thead {
+        background-color: #343a40; /* Fondo oscuro */
+        color: white; /* Texto blanco */
+    }
+
+    /* Celdas del encabezado */
+    .table-custom th {
+        padding: 12px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Celdas del cuerpo */
+    .table-custom td {
+        padding: 12px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Efecto hover en las filas */
+    .table-custom tbody tr:hover {
+        background-color: #f8f9fa; /* Color de fondo al pasar el mouse */
+    }
+
+/* Imagen de avatar */
+.avatar-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 60%; /* Hace la imagen redonda */
+    border: 2px solid #dee2e6; /* Borde alrededor de la imagen */
+}
+
+/* Botones de acciones */
+.action-buttons .btn {
+    margin: 2px;
+    font-size: 12px;
+    padding: 3px 6px;
+}
+
+/* Botón Editar */
+.action-buttons .btn-edit {
+    background-color: #007bff; /* Azul */
+    color: white;
+}
+
+/* Botón Detalles */
+.action-buttons .btn-details {
+    background-color: #17a2b8; /* Turquesa */
+    color: white;
+}
+
+/* Botón Eliminar */
+.action-buttons .btn-delete {
+    background-color: #dc3545; /* Rojo */
+    color: white;
+}

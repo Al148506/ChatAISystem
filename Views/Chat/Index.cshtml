@@ -1,0 +1,80 @@
+﻿@model ChatAISystem.Models.ViewModels.ChatViewModel;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat con IA en tiempo real</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+</head>
+<body>
+    <h2>Chat con IA</h2>
+
+    <!-- Caja de mensajes -->
+    <div id="chatBox"></div>
+
+    <!-- Campo oculto para el ID del usuario -->
+    <input type="hidden" id="userId" value="@Model.UserId" />
+
+    <!-- Selector de personaje -->
+    <label for="characterSelect">Selecciona un personaje:</label>
+    <select id="characterSelect">
+        <option value="">-- Elige un personaje --</option>
+        @foreach (var character in Model.Characters)
+        {
+        <option value="@character.Id">@character.Name</option>
+        }
+    </select>
+
+    <!-- Campo para escribir el mensaje -->
+    <input type="text" id="messageInput" placeholder="Escribe un mensaje">
+
+    <button onclick="sendMessage()">Enviar</button>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.start().catch(err => console.error(err.toString()));
+
+        connection.on("ReceiveMessage", (sender, message) => {
+            const chatBox = document.getElementById("chatBox");
+            const msg = document.createElement("p");
+
+            // Estilizar mensajes de la IA
+            if (sender === "IA") {
+                msg.style.color = "blue";
+                msg.style.fontWeight = "bold";
+            }
+
+            msg.innerText = `${sender}: ${message}`;
+            chatBox.appendChild(msg);
+        });
+
+        function sendMessage() {
+            // Obtener el ID del usuario desde el input oculto
+            const userId = parseInt(document.getElementById("userId").value);
+            // Obtener el ID del personaje seleccionado
+            const characterSelect = document.getElementById("characterSelect");
+            const characterId = parseInt(characterSelect.value);
+            // Obtener el mensaje
+            const message = document.getElementById("messageInput").value;
+
+            // Validar que se haya seleccionado un personaje y se haya ingresado mensaje
+            if (isNaN(characterId)) {
+                alert("Por favor, selecciona un personaje.");
+                return;
+            }
+            if (!message.trim()) {
+                alert("Por favor, ingresa un mensaje.");
+                return;
+            }
+
+            // Llamar al método SendMessage en el hub
+            connection.invoke("SendMessage", userId, characterId, message)
+                .catch(err => console.error(err.toString()));
+        }
+    </script>
+</body>
+</html>

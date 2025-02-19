@@ -1,0 +1,147 @@
+﻿body { /* General */
+    body
+
+{
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+.custom-textarea {
+    width: 100%;
+    height: 250px;
+    resize: vertical; /* Solo redimensionar verticalmente */
+}
+/* Contenedor del formulario */
+.form-container {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 20px auto;
+    max-width: 400px;
+    border: 1px solid #eaeaea;
+    position: relative;
+    top: 50%;
+    transform: translateY(-1%);
+}
+
+/* Títulos */
+.form-title {
+    text-align: center;
+    color: #007bff;
+    font-size: 40px;
+    margin-bottom: 20px;
+}
+
+/* Grupos de campos */
+.form-group {
+    margin-bottom: 15px;
+}
+
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #555555;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+    }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+/* Botones */
+.btn {
+    display: inline-block;
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: none;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: #ffffff;
+}
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: #ffffff;
+}
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+.btn-block {
+    width: 100%;
+}
+
+/* Mensajes de error y validación */
+.text-danger,
+.error-message {
+    font-size: 14px;
+    color: #e74c3c;
+}
+
+.error-message {
+    padding: 10px;
+    border: 1px solid #e74c3c;
+    border-radius: 5px;
+    margin-top: 15px;
+    background-color: #f9d6d5;
+}
+
+/* Flexbox utilities */
+.d-flex {
+    display: flex;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.ms-auto {
+    margin-left: auto;
+}
+
+/* Adaptaciones para dispositivos móviles */
+@media (max-width: 576px) {
+    .form-container {
+        padding: 15px;
+        margin: 10px;
+        top: auto;
+        transform: none;
+    }
+
+    .btn-block {
+        margin-top: 10px;
+    }
+}

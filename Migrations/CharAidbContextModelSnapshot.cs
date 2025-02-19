@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChatAISystem.Migrations
 {
-    [DbContext(typeof(CharAidbContext))]
+    [DbContext(typeof(ChatAIDBContext))]
     partial class CharAidbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

@@ -9,10 +9,10 @@ namespace ChatAISystem.Controllers
 {
     public class RegisterController : Controller
     {
-        private readonly CharAidbContext _context;
+        private readonly ChatAIDBContext _context;
         private readonly IConfiguration _configuration;
 
-        public RegisterController(CharAidbContext context, IConfiguration configuration)
+        public RegisterController(ChatAIDBContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -23,7 +23,7 @@ namespace ChatAISystem.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegisterAsync(RegisterViewModel model)
+        public async Task<IActionResult> Create(RegisterViewModel model)
         {
             var validationResponse = ValidateRegistration(model);
             if (!validationResponse.success)
