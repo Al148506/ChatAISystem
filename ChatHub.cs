@@ -4,12 +4,13 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Text.Json;
 using ChatAISystem.Models;
-using System.Net.NetworkInformation;
+using System.Linq;
 
 public class ChatHub : Hub
 {
     private readonly ChatAIDBContext _dbContext;
     private readonly string apiKey = "892204d40fbd4262b8be46dfc16b4404";
+    private const int MaxMessagesPerCharacter = 500; // Límite de mensajes por personaje
 
     public ChatHub(ChatAIDBContext context)
     {
@@ -26,7 +27,12 @@ public class ChatHub : Hub
             return;
         }
 
-        // Guardar mensaje del usuario en la base de datos
+        // Obtener el HttpContext para acceder a la sesión desde el hub
+        var httpContext = Context.GetHttpContext();
+        int? lastCharacterId = httpContext.Session.GetInt32("LastCharacterId");
+        string characterName = _dbContext.Characters.Find(characterId)?.Name;
+
+        // Guardar el mensaje del usuario en la base de datos
         var userMessage = new Conversation
         {
             UserId = userId,
@@ -39,13 +45,16 @@ public class ChatHub : Hub
         _dbContext.Conversations.Add(userMessage);
         await _dbContext.SaveChangesAsync();
 
+        // Eliminar mensajes antiguos si exceden el límite
+        await EnsureMessageLimit(userId, characterId);
+
         // Enviar el mensaje del usuario a los clientes
         await Clients.All.SendAsync("ReceiveMessage", user.Username, message);
 
         // Obtener respuesta de la IA con historial
         string aiResponse = await GetAIResponse(userId, characterId);
 
-        // Guardar respuesta de la IA en la base de datos
+        // Guardar la respuesta de la IA en la base de datos
         var aiMessage = new Conversation
         {
             UserId = userId,
@@ -58,8 +67,29 @@ public class ChatHub : Hub
         _dbContext.Conversations.Add(aiMessage);
         await _dbContext.SaveChangesAsync();
 
+        // Eliminar mensajes antiguos si exceden el límite nuevamente
+        await EnsureMessageLimit(userId, characterId);
+
         // Enviar la respuesta de la IA a los clientes
-        await Clients.All.SendAsync("ReceiveMessage", "IA", aiResponse);
+        await Clients.All.SendAsync("ReceiveMessage", characterName, aiResponse);
+    }
+
+    /// <summary>
+    /// Método para mantener solo los últimos X mensajes en la base de datos.
+    /// </summary>
+    private async Task EnsureMessageLimit(int userId, int characterId)
+    {
+        var messagesToDelete = _dbContext.Conversations
+            .Where(c => c.UserId == userId && c.CharacterId == characterId)
+            .OrderByDescending(c => c.Timestamp)
+            .Skip(MaxMessagesPerCharacter)
+            .ToList(); // Obtener los mensajes que exceden el límite
+
+        if (messagesToDelete.Any())
+        {
+            _dbContext.Conversations.RemoveRange(messagesToDelete);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 
     private async Task<string> GetAIResponse(int userId, int characterId)
@@ -69,20 +99,32 @@ public class ChatHub : Hub
         request.AddHeader("accept", "application/json");
         request.AddHeader("X-API_KEY", apiKey);
 
-        // Obtener historial desde la base de datos (últimos 10 mensajes)
+        var messages = new List<Message>();
+
+        // 1. Recuperar el personaje para obtener su descripción (prompt)
+        var character = await _dbContext.Characters.FindAsync(characterId);
+        if (character != null && !string.IsNullOrEmpty(character.Description))
+        {
+            messages.Add(new Message { role = "system", content = character.Description });
+        }
+        // Asegurar que la IA siempre responda en español
+        messages.Insert(0, new Message
+        {
+            role = "system",
+            content = "Todas las respuestas deben estar en español."
+        });
+        // 2. Obtener el historial desde la base de datos (hasta el límite de mensajes)
         var chatHistory = _dbContext.Conversations
             .Where(c => c.UserId == userId && c.CharacterId == characterId)
             .OrderBy(c => c.Timestamp)
-            .Take(10)
+            .Take(MaxMessagesPerCharacter) // Solo tomar los últimos mensajes
             .Select(c => new Message { role = c.Role, content = c.MessageText })
             .ToList();
 
-        var requestBody = new
-        {
-            model = "chai_v1",
-            messages = chatHistory
-        };
+        messages.AddRange(chatHistory);
 
+        // 3. Construir la solicitud a la API
+        var requestBody = new { model = "chai_v1", messages = messages };
         request.AddJsonBody(JsonSerializer.Serialize(requestBody));
 
         var response = await client.ExecuteAsync(request);
@@ -99,8 +141,8 @@ public class ChatHub : Hub
     }
 }
 
-    // Clases para deserializar la respuesta de la API
-    public class ChaiResponse
+// Clases para deserializar la respuesta de la API
+public class ChaiResponse
 {
     public Choice[] choices { get; set; }
 }

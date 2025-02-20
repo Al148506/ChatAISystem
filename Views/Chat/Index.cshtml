@@ -5,16 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat con IA en tiempo real</title>
+    <link rel="stylesheet"  href="~/css/Chat.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 </head>
 <body>
     <h2>Chat con IA</h2>
-
-    <!-- Caja de mensajes -->
-    <div id="chatBox"></div>
-
-    <!-- Campo oculto para el ID del usuario -->
-    <input type="hidden" id="userId" value="@Model.UserId" />
 
     <!-- Selector de personaje -->
     <label for="characterSelect">Selecciona un personaje:</label>
@@ -22,14 +17,22 @@
         <option value="">-- Elige un personaje --</option>
         @foreach (var character in Model.Characters)
         {
-        <option value="@character.Id">@character.Name</option>
+            <option value="@character.Id">@character.Name</option>
         }
     </select>
 
-    <!-- Campo para escribir el mensaje -->
-    <input type="text" id="messageInput" placeholder="Escribe un mensaje">
+    <!-- Caja de mensajes -->
+    <div id="chatBox"></div>
 
-    <button onclick="sendMessage()">Enviar</button>
+    <!-- Campo oculto para el ID del usuario -->
+    <input type="hidden" id="userId" value="@Model.UserId" />
+
+    <!-- Campo para escribir el mensaje -->
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Escribe un mensaje" onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+
 
     <script>
         const connection = new signalR.HubConnectionBuilder()
@@ -74,6 +77,13 @@
             // Llamar al método SendMessage en el hub
             connection.invoke("SendMessage", userId, characterId, message)
                 .catch(err => console.error(err.toString()));
+            //limpiar el campo de texto
+            document.getElementById("messageInput").value = "";
+        }
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
         }
     </script>
 </body>
