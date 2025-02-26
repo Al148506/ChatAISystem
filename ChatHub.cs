@@ -18,42 +18,42 @@ public class ChatHub : Hub
         _dbContext = context;
     }
     //Carga mensajes paginados para el historial de chat.
-    //public async Task LoadChatHistory(int userId, int characterId, int page, int pageSize)
-    //{
-    //    try
-    //    {
-    //        // Validar parámetros
-    //        if (userId <= 0 || characterId <= 0 || page <= 0 || pageSize <= 0)
-    //        {
-    //            throw new ArgumentException("Parámetros no válidos");
-    //        }
+    public async Task LoadChatHistory(int userId, int characterId, int page, int pageSize)
+    {
+        try
+        {
+            // Validar parámetros
+            if (userId <= 0 || characterId <= 0 || page <= 0 || pageSize <= 0)
+            {
+                throw new ArgumentException("Parámetros no válidos");
+            }
 
-    //        int skipMessages = (page - 1) * pageSize;
+            int skipMessages = (page - 1) * pageSize;
 
-    //        var messages = _dbContext.Conversations
-    //            .AsNoTracking()
-    //            .Where(c => c.UserId == userId && c.CharacterId == characterId)
-    //            .OrderByDescending(c => c.Timestamp)
-    //            .Skip(skipMessages)
-    //            .Take(pageSize)
-    //            .Select(c => new
-    //            {
-    //                c.Role,
-    //                c.MessageText,
-    //                Timestamp = c.Timestamp.ToUniversalTime().ToString("o")
-    //            })
-    //            .ToList();
+            var messages = _dbContext.Conversations
+                .AsNoTracking()
+                .Where(c => c.UserId == userId && c.CharacterId == characterId)
+                .OrderByDescending(c => c.Timestamp)
+                .Skip(skipMessages)
+                .Take(pageSize)
+                .Select(c => new
+                {
+                    c.Role,
+                    c.MessageText,
+                    Timestamp = c.Timestamp.ToUniversalTime().ToString("o")
+                })
+                .ToList();
 
-    //        var jsonMessages = JsonSerializer.Serialize(messages);
-    //        Console.WriteLine("Mensajes serializados:", jsonMessages);
-    //        await Clients.Caller.SendAsync("LoadChatHistory", jsonMessages);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        Console.WriteLine($"Error al cargar el historial: {ex.Message}");
-    //        await Clients.Caller.SendAsync("LoadChatHistoryError", ex.Message);
-    //    }
-    //}
+            var jsonMessages = JsonSerializer.Serialize(messages);
+            Console.WriteLine("Mensajes serializados:", jsonMessages);
+            await Clients.Caller.SendAsync("LoadChatHistory", jsonMessages);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al cargar el historial: {ex.Message}");
+            await Clients.Caller.SendAsync("LoadChatHistoryError", ex.Message);
+        }
+    }
 
 
     public async Task SendMessage(int userId, int characterId, string message)
