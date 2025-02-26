@@ -1,40 +1,50 @@
-﻿@model ChatAISystem.Models.ViewModels.ChatViewModel;
+﻿@model ChatAISystem.Models.ViewModels.ChatViewModel
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat con IA en tiempo real</title>
-    <link rel="stylesheet"  href="~/css/Chat.css"/>
+    <link rel="stylesheet" href="~/css/Chat.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 </head>
 <body>
-    <h2>Chat con IA</h2>
+    <div class="chat-container">
+        <!-- Sidebar con lista de personajes -->
+        <div class="sidebar">
+            @foreach (var character in Model.Characters)
+            {
+                <div class="character" onclick="selectCharacter('@character.Id', '@character.Name')">
+                    <img src="@character.AvatarUrl" alt="@character.Name" />
+                    <span>@character.Name</span>
+                </div>
+            }
+        </div>
 
-    <!-- Selector de personaje -->
-    <label for="characterSelect">Selecciona un personaje:</label>
-    <select id="characterSelect">
-        <option value="">-- Elige un personaje --</option>
-        @foreach (var character in Model.Characters)
-        {
-            <option value="@character.Id">@character.Name</option>
-        }
-    </select>
+        <!-- Área principal del chat -->
+        <div class="chat-main">
+            <!-- Barra superior -->
+            <div class="chat-header">
+                <span id="chatTitle">Chat con IA</span>
+            </div>
 
-    <!-- Caja de mensajes -->
-    <div id="chatBox"></div>
+            <!-- Caja de mensajes -->
+            <div id="chatBox" class="chat-box"></div>
 
-    <!-- Campo oculto para el ID del usuario -->
-    <input type="hidden" id="userId" value="@Model.UserId" />
+            <!-- Campos ocultos para el ID del usuario y personaje seleccionado -->
+            <input type="hidden" id="userId" value="@Model.UserId" />
+            <input type="hidden" id="characterId" value="" />
 
-    <!-- Campo para escribir el mensaje -->
-    <div class="input-container">
-        <input type="text" id="messageInput" placeholder="Escribe un mensaje" onkeypress="handleKeyPress(event)">
-        <button onclick="sendMessage()">Enviar</button>
+            <!-- Campo para escribir el mensaje -->
+            <div class="input-container">
+                <input type="text" id="messageInput" placeholder="Escribe un mensaje" onkeydown="handleKeyPress(event)">
+                <button onclick="sendMessage()">Enviar</button>
+            </div>
+        </div>
     </div>
 
-
     <script>
+        // Conexión con SignalR
         const connection = new signalR.HubConnectionBuilder()
             .withUrl("/chatHub")
             .build();
@@ -42,44 +52,48 @@
         connection.start().catch(err => console.error(err.toString()));
 
         connection.on("ReceiveMessage", (sender, message) => {
+            console.log(`Sender recibido: ${sender}`); // Verifica qué valor está recibiendo
             const chatBox = document.getElementById("chatBox");
-            const msg = document.createElement("p");
+            const msgContainer = document.createElement("div");
+            msgContainer.classList.add("message");
 
-            // Estilizar mensajes de la IA
             if (sender === "IA") {
-                msg.style.color = "blue";
-                msg.style.fontWeight = "bold";
+                msgContainer.classList.add("received");
+            } else {
+                msgContainer.classList.add("sent");
             }
 
-            msg.innerText = `${sender}: ${message}`;
-            chatBox.appendChild(msg);
+            msgContainer.innerHTML = `<span>${message}</span>`;
+            chatBox.appendChild(msgContainer);
+            chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-        function sendMessage() {
-            // Obtener el ID del usuario desde el input oculto
-            const userId = parseInt(document.getElementById("userId").value);
-            // Obtener el ID del personaje seleccionado
-            const characterSelect = document.getElementById("characterSelect");
-            const characterId = parseInt(characterSelect.value);
-            // Obtener el mensaje
-            const message = document.getElementById("messageInput").value;
+        // Función para seleccionar un personaje de la sidebar
+        function selectCharacter(id, name) {
+            document.getElementById("characterId").value = id;
+            document.getElementById("chatTitle").innerText = `Chat con ${name}`;
+        }
 
-            // Validar que se haya seleccionado un personaje y se haya ingresado mensaje
+        function sendMessage() {
+            const userId = parseInt(document.getElementById("userId").value, 10);
+            const characterId = parseInt(document.getElementById("characterId").value, 10);
+            const message = document.getElementById("messageInput").value.trim();
+
             if (isNaN(characterId)) {
-                alert("Por favor, selecciona un personaje.");
+                alert("Por favor, selecciona un personaje de la lista.");
                 return;
             }
-            if (!message.trim()) {
+            if (!message) {
                 alert("Por favor, ingresa un mensaje.");
                 return;
             }
 
-            // Llamar al método SendMessage en el hub
             connection.invoke("SendMessage", userId, characterId, message)
                 .catch(err => console.error(err.toString()));
-            //limpiar el campo de texto
+
             document.getElementById("messageInput").value = "";
         }
+
         function handleKeyPress(event) {
             if (event.key === "Enter") {
                 sendMessage();

@@ -15,7 +15,7 @@ public partial class Conversation
 
     public string MessageText { get; set; } = null!;
 
-    public DateTime? Timestamp { get; set; }
+    public DateTime Timestamp { get; set; }
 
     public virtual Character Character { get; set; } = null!;
 

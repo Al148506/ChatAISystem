@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using ChatAISystem.Models;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 public class ChatHub : Hub
 {
@@ -16,6 +17,44 @@ public class ChatHub : Hub
     {
         _dbContext = context;
     }
+    //Carga mensajes paginados para el historial de chat.
+    //public async Task LoadChatHistory(int userId, int characterId, int page, int pageSize)
+    //{
+    //    try
+    //    {
+    //        // Validar parámetros
+    //        if (userId <= 0 || characterId <= 0 || page <= 0 || pageSize <= 0)
+    //        {
+    //            throw new ArgumentException("Parámetros no válidos");
+    //        }
+
+    //        int skipMessages = (page - 1) * pageSize;
+
+    //        var messages = _dbContext.Conversations
+    //            .AsNoTracking()
+    //            .Where(c => c.UserId == userId && c.CharacterId == characterId)
+    //            .OrderByDescending(c => c.Timestamp)
+    //            .Skip(skipMessages)
+    //            .Take(pageSize)
+    //            .Select(c => new
+    //            {
+    //                c.Role,
+    //                c.MessageText,
+    //                Timestamp = c.Timestamp.ToUniversalTime().ToString("o")
+    //            })
+    //            .ToList();
+
+    //        var jsonMessages = JsonSerializer.Serialize(messages);
+    //        Console.WriteLine("Mensajes serializados:", jsonMessages);
+    //        await Clients.Caller.SendAsync("LoadChatHistory", jsonMessages);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Console.WriteLine($"Error al cargar el historial: {ex.Message}");
+    //        await Clients.Caller.SendAsync("LoadChatHistoryError", ex.Message);
+    //    }
+    //}
+
 
     public async Task SendMessage(int userId, int characterId, string message)
     {
@@ -27,10 +66,11 @@ public class ChatHub : Hub
             return;
         }
 
+
         // Obtener el HttpContext para acceder a la sesión desde el hub
         var httpContext = Context.GetHttpContext();
-        int? lastCharacterId = httpContext.Session.GetInt32("LastCharacterId");
-        string characterName = _dbContext.Characters.Find(characterId)?.Name;
+        int? lastCharacterId = httpContext?.Session.GetInt32("LastCharacterId");
+        string? characterName = _dbContext.Characters.Find(characterId)?.Name;
 
         // Guardar el mensaje del usuario en la base de datos
         var userMessage = new Conversation
@@ -71,7 +111,7 @@ public class ChatHub : Hub
         await EnsureMessageLimit(userId, characterId);
 
         // Enviar la respuesta de la IA a los clientes
-        await Clients.All.SendAsync("ReceiveMessage", characterName, aiResponse);
+        await Clients.All.SendAsync("ReceiveMessage", "IA", aiResponse);
     }
 
     /// <summary>
@@ -111,7 +151,7 @@ public class ChatHub : Hub
         messages.Insert(0, new Message
         {
             role = "system",
-            content = "Todas las respuestas deben estar en español."
+            content = "Responde siempre en español, mantente fiel a tu personaje y evita mencionar que eres una inteligencia artificial. Tu objetivo es proporcionar respuestas divertidas, adaptándote al contexto de la conversación sin salir de tu rol."
         });
         // 2. Obtener el historial desde la base de datos (hasta el límite de mensajes)
         var chatHistory = _dbContext.Conversations
@@ -129,7 +169,7 @@ public class ChatHub : Hub
 
         var response = await client.ExecuteAsync(request);
 
-        if (response.IsSuccessful)
+        if (response.IsSuccessful && response.Content != null)
         {
             var jsonResponse = JsonSerializer.Deserialize<ChaiResponse>(response.Content);
             return jsonResponse?.choices?[0]?.message?.content ?? "Error al procesar la respuesta de la IA.";
@@ -144,16 +184,16 @@ public class ChatHub : Hub
 // Clases para deserializar la respuesta de la API
 public class ChaiResponse
 {
-    public Choice[] choices { get; set; }
+    public required Choice[] choices { get; set; }
 }
 
 public class Choice
 {
-    public Message message { get; set; }
+    public required Message message { get; set; }
 }
 
 public class Message
 {
-    public string role { get; set; }
-    public string content { get; set; }
+    public required string role { get; set; }
+    public required string content { get; set; }
 }
