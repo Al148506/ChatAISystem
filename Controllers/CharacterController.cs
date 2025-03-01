@@ -17,10 +17,35 @@ namespace ChatAISystem.Controllers
         }
 
         // GET: Character
-        public async Task<IActionResult> Index()
+        // GET: Character
+        public async Task<IActionResult> Index(string searchName, string currentFilter)
         {
-            var chatAIDBContext = _context.Characters.Include(c => c.CreatedByNavigation);
-            return View(await chatAIDBContext.ToListAsync());
+            // Si se envía un nuevo término de búsqueda, reinicia la paginación
+            if (searchName != null)
+            {
+                // Nueva búsqueda, resetear
+                currentFilter = searchName;
+            }
+            else
+            {
+                // No hay nuevo término, usar el filtro actual
+                searchName = currentFilter;
+            }
+
+            // Guardar el filtro actual para mantenerlo en la vista
+            ViewData["CurrentFilter"] = searchName;
+
+            var characterQuery = _context.Characters
+                .Include(c => c.CreatedByNavigation)
+                .AsQueryable();
+
+            // Aplicar el filtro de búsqueda si existe
+            if (!string.IsNullOrEmpty(searchName))
+            {
+                characterQuery = characterQuery.Where(c => c.Name.Contains(searchName));
+            }
+
+            return View(await characterQuery.ToListAsync());
         }
 
         [HttpGet]

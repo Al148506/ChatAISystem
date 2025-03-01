@@ -240,8 +240,9 @@
 /* Diseño responsivo */
 @media (max-width: 768px) {
     .chat-container {
-        height: 100vh;
+        height: 85vh;
         border-radius: 0;
+
     }
 
     .sidebar {

@@ -3,8 +3,8 @@ body, html {
     margin: 0;
     padding: 0;
     height: 100%;
-    background: #1b1c3b; /* Fondo oscuro */
-    font-family: sans-serif; /* Fuente predeterminada */
+    background: linear-gradient(135deg, #0f0f2d 0%, #1b1c3b 100%);
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     color: white; /* Texto blanco por defecto */
 }
 
@@ -13,7 +13,7 @@ body, html {
     height: 600px;
     width: 370px;
     margin: auto; /* Centrado vertical y horizontal */
-    background: #1e3a8a; /* Azul rey */
+    background: linear-gradient(to bottom, #1e3a8a, #152a66);
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -21,6 +21,34 @@ body, html {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
     border-radius: 10px; /* Bordes más redondeados */
     position: relative;
+}
+
+    /* Efecto de brillo en el borde de la tarjeta */
+    .user_card::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, #3498db, transparent, #3498db);
+        z-index: -1;
+        border-radius: 16px;
+        animation: borderGlow 3s ease-in-out infinite;
+    }
+
+@keyframes borderGlow {
+    0% {
+        opacity: 0.2;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 0.2;
+    }
 }
 
 /* Contenedor del logo de la marca */
@@ -40,21 +68,38 @@ body, html {
     width: 150px;
     border-radius: 50%;
     object-fit: cover; /* Asegura que la imagen se ajuste correctamente */
+    transition: transform 0.3s ease;
 }
+
+.brand_logo:hover {
+        transform: scale(1.05);
+}
+
 
 /* Credenciales de demostración */
 .demo-credentials {
-    margin-top: 50px;
-    padding: 10px;
+    margin-top: 60px;
+    padding: 12px;
     text-align: center;
-    border-radius: 5px;
-    margin-bottom: -30px;
+    border-radius: 8px;
+    margin-bottom: -20px;
+    font-size: 14px;
+    border-left: 3px solid #3498db;
 }
 
 /* Contenedor del formulario */
 .form_container {
-    margin-top: 50px;
+    margin-top: 70px;
 }
+
+/* Grupo de entrada */
+.input-group {
+    margin-bottom: 20px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+
 
 /* Botón de inicio de sesión */
 .login_btn {
@@ -80,7 +125,7 @@ body, html {
 
 /* Contenedor del formulario de inicio de sesión */
 .login_container {
-    padding: 0 2rem;
+    padding: 0 1.5rem;
 }
 
 /* Estilo para los íconos de los inputs */
@@ -128,3 +173,21 @@ body, html {
     padding: 10px;
     border-radius: 5px;
 }
+/* Responsive */
+@media (max-width: 480px) {
+    .user_card {
+        width: 80%;
+        padding: 30px 15px;
+    }
+
+    .brand_logo_container {
+        height: 120px;
+        width: 120px;
+        top: -50px;
+    }
+
+    .brand_logo {
+        height: 100px;
+        width: 100px;
+        }
+    }
