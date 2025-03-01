@@ -10,14 +10,16 @@ using Microsoft.EntityFrameworkCore;
 public class ChatHub : Hub
 {
     private readonly ChatAIDBContext _dbContext;
-    private readonly string apiKey = "892204d40fbd4262b8be46dfc16b4404";
-    private const int MaxMessagesPerCharacter = 500; // Límite de mensajes por personaje
+    private readonly string _apiKey;
+    private const int MaxMessagesPerCharacter = 1000; // Límite de mensajes por personaje
 
-    public ChatHub(ChatAIDBContext context)
+    public ChatHub(ChatAIDBContext context, IConfiguration configuration)
     {
         _dbContext = context;
+        _apiKey = configuration["ApiKeys:Gemini"] ?? throw new ArgumentNullException(nameof(configuration), "ApiKey no puede ser nulo");
     }
     //Carga mensajes paginados para el historial de chat.
+
     public async Task LoadChatHistory(int userId, int characterId, int page, int pageSize)
     {
         try
@@ -30,7 +32,7 @@ public class ChatHub : Hub
 
             int skipMessages = (page - 1) * pageSize;
 
-            var messages = _dbContext.Conversations
+            var messages = await _dbContext.Conversations
                 .AsNoTracking()
                 .Where(c => c.UserId == userId && c.CharacterId == characterId)
                 .OrderByDescending(c => c.Timestamp)
@@ -42,10 +44,9 @@ public class ChatHub : Hub
                     c.MessageText,
                     Timestamp = c.Timestamp.ToUniversalTime().ToString("o")
                 })
-                .ToList();
+                .ToListAsync();
 
             var jsonMessages = JsonSerializer.Serialize(messages);
-            Console.WriteLine("Mensajes serializados:", jsonMessages);
             await Clients.Caller.SendAsync("LoadChatHistory", jsonMessages);
         }
         catch (Exception ex)
@@ -54,6 +55,7 @@ public class ChatHub : Hub
             await Clients.Caller.SendAsync("LoadChatHistoryError", ex.Message);
         }
     }
+
 
 
     public async Task SendMessage(int userId, int characterId, string message)
@@ -119,11 +121,11 @@ public class ChatHub : Hub
     /// </summary>
     private async Task EnsureMessageLimit(int userId, int characterId)
     {
-        var messagesToDelete = _dbContext.Conversations
+        var messagesToDelete = await _dbContext.Conversations
             .Where(c => c.UserId == userId && c.CharacterId == characterId)
             .OrderByDescending(c => c.Timestamp)
             .Skip(MaxMessagesPerCharacter)
-            .ToList(); // Obtener los mensajes que exceden el límite
+            .ToListAsync(); // Obtener los mensajes que exceden el límite
 
         if (messagesToDelete.Any())
         {
@@ -134,53 +136,92 @@ public class ChatHub : Hub
 
     private async Task<string> GetAIResponse(int userId, int characterId)
     {
-        var client = new RestClient("https://api.chai-research.com/v1/chat/completions");
-        var request = new RestRequest("", Method.Post);
-        request.AddHeader("accept", "application/json");
-        request.AddHeader("X-API_KEY", apiKey);
-
-        var messages = new List<Message>();
-
-        // 1. Recuperar el personaje para obtener su descripción (prompt)
-        var character = await _dbContext.Characters.FindAsync(characterId);
-        if (character != null && !string.IsNullOrEmpty(character.Description))
+        try
         {
-            messages.Add(new Message { role = "system", content = character.Description });
+            // 1. Recuperar la descripción del personaje y el historial del chat
+            var messages = new List<Message>();
+
+            // Obtener el personaje para su prompt inicial
+            var character = await _dbContext.Characters.AsNoTracking().FirstOrDefaultAsync(c => c.Id == characterId);
+            if (character?.Description != null)
+            {
+                // Usamos el rol "system" para dar instrucciones iniciales
+                messages.Add(new Message { role = "system", content = character.Description });
+            }
+
+            // Obtener el historial de conversación (hasta 50 mensajes, por ejemplo)
+            var chatHistory = await _dbContext.Conversations.AsNoTracking()
+                .Where(c => c.UserId == userId && c.CharacterId == characterId)
+                .OrderBy(c => c.Timestamp)
+                .Select(c => new Message { role = c.Role, content = c.MessageText })
+                .ToListAsync();
+
+            messages.AddRange(chatHistory);
+
+            // Combinar el prompt y el historial en un solo texto o enviarlos separados, según lo requiera la API.
+            string combinedPrompt = string.Join("\n", messages.Select(m => $"{m.role}: {m.content}"));
+
+            // 2. Configurar el cliente y el endpoint para la API Gemini
+            string endpoint = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_apiKey}";
+            using var client = new RestClient(endpoint);
+            var request = new RestRequest("", Method.Post)
+            {
+                Timeout = TimeSpan.FromSeconds(15)// 15 segundos de timeout
+            };
+            request.AddHeader("Content-Type", "application/json");
+
+            // 3. Construir el cuerpo de la solicitud
+            var requestBody = new
+            {
+                contents = new[]
+                {
+                new
+                {
+                    parts = new[]
+                    {
+                        new { text = combinedPrompt }
+                    }
+                }
+            }
+            };
+
+            request.AddJsonBody(requestBody);
+
+            // 4. Ejecutar la solicitud y procesar la respuesta
+            var response = await client.ExecuteAsync(request);
+
+            Console.WriteLine("Respuesta cruda de Gemini: " + response.Content);
+
+            if (response.IsSuccessful && !string.IsNullOrEmpty(response.Content))
+            {
+                var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(response.Content);
+                if (geminiResponse?.candidates != null && geminiResponse.candidates.Any())
+                {
+                    var candidate = geminiResponse.candidates.FirstOrDefault();
+                    if (candidate?.content?.parts != null && candidate.content.parts.Any())
+                    {
+                        var outputText = candidate.content.parts.First().text;
+                        if (!string.IsNullOrEmpty(outputText))
+                        {
+                            return outputText;
+                        }
+                    }
+                }
+                return "Error: La respuesta de la IA no contiene mensajes válidos.";
+            }
+            else
+            {
+                return $"Error en la API: {response.StatusCode} - {response.Content}";
+            }
         }
-        // Asegurar que la IA siempre responda en español
-        messages.Insert(0, new Message
+        catch (Exception ex)
         {
-            role = "system",
-            content = "Responde siempre en español, mantente fiel a tu personaje y evita mencionar que eres una inteligencia artificial. Tu objetivo es proporcionar respuestas divertidas, adaptándote al contexto de la conversación sin salir de tu rol."
-        });
-        // 2. Obtener el historial desde la base de datos (hasta el límite de mensajes)
-        var chatHistory = _dbContext.Conversations
-            .Where(c => c.UserId == userId && c.CharacterId == characterId)
-            .OrderBy(c => c.Timestamp)
-            .Take(MaxMessagesPerCharacter) // Solo tomar los últimos mensajes
-            .Select(c => new Message { role = c.Role, content = c.MessageText })
-            .ToList();
-
-        messages.AddRange(chatHistory);
-
-        // 3. Construir la solicitud a la API
-        var requestBody = new { model = "chai_v1", messages = messages };
-        request.AddJsonBody(JsonSerializer.Serialize(requestBody));
-
-        var response = await client.ExecuteAsync(request);
-
-        if (response.IsSuccessful && response.Content != null)
-        {
-            var jsonResponse = JsonSerializer.Deserialize<ChaiResponse>(response.Content);
-            return jsonResponse?.choices?[0]?.message?.content ?? "Error al procesar la respuesta de la IA.";
-        }
-        else
-        {
-            return $"Error en la API: {response.StatusCode} - {response.Content}";
+            Console.WriteLine($"Error in GetAIResponse: {ex.Message}");
+            return "Error al obtener respuesta de la IA.";
         }
     }
-}
 
+}
 // Clases para deserializar la respuesta de la API
 public class ChaiResponse
 {
@@ -197,3 +238,26 @@ public class Message
     public required string role { get; set; }
     public required string content { get; set; }
 }
+public class GeminiResponse
+{
+    public Candidate[] candidates { get; set; }
+}
+
+public class Candidate
+{
+    public Content content { get; set; }
+    public string finishReason { get; set; }
+    public double avgLogprobs { get; set; }
+}
+
+public class Content
+{
+    public Part[] parts { get; set; }
+    public string role { get; set; }
+}
+
+public class Part
+{
+    public string text { get; set; }
+}
+

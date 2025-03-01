@@ -100,9 +100,12 @@
                 })
                 .catch(err => {
                     console.error("Error al invocar LoadChatHistory:", err.toString());
-                    loading = false;
+                })
+                .finally(() => {
+                    loading = false; // Asegura que se reestablezca el flag
                 });
         }
+
 
         // Función para manejar la tecla Enter
         function handleKeyPress(event) {
@@ -149,7 +152,7 @@
         // Evento para recibir mensajes nuevos
         connection.on("ReceiveMessage", (sender, message) => {
             console.log(`Sender recibido: ${sender}`); // Verifica qué valor está recibiendo
-            addMessageToChat(sender === "user" ? "user" : "ai", message);
+            addMessageToChat(sender === "IA" ? "ai" : "user", message);
         });
 
         // Evento para cargar el historial de mensajes
@@ -159,7 +162,7 @@
                 console.log("Mensajes recibidos:", messages);
                 if (messages.length === 0) return;
 
-                messages.reverse().forEach(msg => {
+                messages.forEach(msg => {
                     // Usa msg.Role y msg.MessageText en lugar de msg.role y msg.messageText
                     addMessageToChat(msg.Role === "user" ? "user" : "ai", msg.MessageText, "prepend");
                 });

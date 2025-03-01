@@ -60,7 +60,7 @@ namespace ChatAISystem.Controllers
                 _context.Add(character);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Character");
             }
 
             // Si llegamos aquí, ModelState no es válido. Se devuelve la vista para mostrar los errores.
