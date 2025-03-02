@@ -6,6 +6,7 @@ using System.Text.Json;
 using ChatAISystem.Models;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using ChatAISystem.Models;
 
 public class ChatHub : Hub
 {
@@ -139,21 +140,21 @@ public class ChatHub : Hub
         try
         {
             // 1. Recuperar la descripción del personaje y el historial del chat
-            var messages = new List<Message>();
+            var messages = new List< APIMessage.Message>();
 
             // Obtener el personaje para su prompt inicial
             var character = await _dbContext.Characters.AsNoTracking().FirstOrDefaultAsync(c => c.Id == characterId);
             if (character?.Description != null)
             {
                 // Usamos el rol "system" para dar instrucciones iniciales
-                messages.Add(new Message { role = "system", content = character.Description });
+                messages.Add(new APIMessage.Message { role = "system", content = character.Description });
             }
 
             // Obtener el historial de conversación (hasta 50 mensajes, por ejemplo)
             var chatHistory = await _dbContext.Conversations.AsNoTracking()
                 .Where(c => c.UserId == userId && c.CharacterId == characterId)
                 .OrderBy(c => c.Timestamp)
-                .Select(c => new Message { role = c.Role, content = c.MessageText })
+                .Select(c => new APIMessage.Message { role = c.Role, content = c.MessageText })
                 .ToListAsync();
 
             messages.AddRange(chatHistory);
@@ -194,7 +195,7 @@ public class ChatHub : Hub
 
             if (response.IsSuccessful && !string.IsNullOrEmpty(response.Content))
             {
-                var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(response.Content);
+                var geminiResponse = JsonSerializer.Deserialize<APIMessage.GeminiResponse>(response.Content);
                 if (geminiResponse?.candidates != null && geminiResponse.candidates.Any())
                 {
                     var candidate = geminiResponse.candidates.FirstOrDefault();
@@ -222,42 +223,3 @@ public class ChatHub : Hub
     }
 
 }
-// Clases para deserializar la respuesta de la API
-public class ChaiResponse
-{
-    public required Choice[] choices { get; set; }
-}
-
-public class Choice
-{
-    public required Message message { get; set; }
-}
-
-public class Message
-{
-    public required string role { get; set; }
-    public required string content { get; set; }
-}
-public class GeminiResponse
-{
-    public Candidate[] candidates { get; set; }
-}
-
-public class Candidate
-{
-    public Content content { get; set; }
-    public string finishReason { get; set; }
-    public double avgLogprobs { get; set; }
-}
-
-public class Content
-{
-    public Part[] parts { get; set; }
-    public string role { get; set; }
-}
-
-public class Part
-{
-    public string text { get; set; }
-}
-
