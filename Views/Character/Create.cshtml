@@ -1,0 +1,28 @@
+﻿@model ChatAISystem.Models.Character
+<link href="~/css/Form.css" rel="stylesheet" />
+<div class="form-container">
+    <h1 class="form-title">Create Product</h1>
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="Name" class="control-label">Nombre del Personaje</label>
+            <input asp-for="Name" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description" class="control-label">Descripción</label>
+            <textarea asp-for="Description" class="form-control custom-textarea"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="AvatarUrl" class="control-label">URL del Avatar</label>
+            <input asp-for="AvatarUrl" class="form-control" />
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+            <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+            <a asp-action="Index" asp-controller="Character" class="btn btn-secondary mt-2">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+

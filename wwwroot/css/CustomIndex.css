@@ -1,0 +1,298 @@
+﻿/* Contenedor principal para la tabla */
+.table-responsive {
+    max-height: calc(100vh - 150px);
+    overflow-y: auto;
+    margin-bottom: 80px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    background-color: white;
+}
+
+    /* Estilizado de la barra de desplazamiento para navegadores compatibles */
+    .table-responsive::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #3a7bd5;
+        border-radius: 10px;
+    }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #366bb8;
+        }
+
+/* Estilos para la tabla */
+.table-custom {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+    /* Encabezado de la tabla */
+    .table-custom thead {
+        background-image: linear-gradient(to right, #3a7bd5, #00d2ff);
+        color: white;
+    }
+
+    /* Celdas del encabezado */
+    .table-custom th {
+        padding: 15px 12px;
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #dee2e6;
+        text-transform: uppercase;
+        font-size: 0.9rem;
+    }
+
+    /* Celdas del cuerpo */
+    .table-custom td {
+        padding: 15px 12px;
+        text-align: center;
+        vertical-align: middle;
+        border-bottom: 1px solid #e9ecef;
+        color: #495057;
+    }
+
+    /* Efecto hover en las filas */
+    .table-custom tbody tr {
+        transition: all 0.2s ease;
+    }
+
+        .table-custom tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Filas alternadas para mejor legibilidad */
+        .table-custom tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+            .table-custom tbody tr:nth-child(even):hover {
+                background-color: #e9ecef;
+            }
+
+/* Truncar descripción */
+.truncate-description {
+    max-width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Reducido a 3 líneas para un aspecto más compacto */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #495057;
+    text-align: left;
+    margin: 0 auto;
+    max-width: 300px; /* Limita el ancho para mejor aspecto */
+}
+
+/* Imagen de avatar */
+.avatar-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 50%;
+    border: 3px solid white;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+    .avatar-img:hover {
+        transform: scale(1.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+/* Contenedor de botones de acciones */
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+    /* Estilos comunes para botones */
+    .action-buttons .btn {
+        margin: 2px;
+        font-size: 0.8rem;
+        padding: 6px 12px;
+        border-radius: 5px;
+        border: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 80px;
+    }
+
+        .action-buttons .btn i {
+            margin-right: 4px;
+            font-size: 0.9rem;
+        }
+
+    /* Botón Editar */
+    .action-buttons .btn-edit {
+        background-color: #3a7bd5;
+        color: white;
+    }
+
+        .action-buttons .btn-edit:hover {
+            background-color: #2b67b8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(58, 123, 213, 0.3);
+        }
+
+    /* Botón Detalles */
+    .action-buttons .btn-details {
+        background-color: #00d2ff;
+        color: white;
+    }
+
+        .action-buttons .btn-details:hover {
+            background-color: #00b8e6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 210, 255, 0.3);
+        }
+
+    /* Botón Eliminar */
+    .action-buttons .btn-delete {
+        background-color: #dc3545;
+        color: white;
+    }
+
+        .action-buttons .btn-delete:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+
+/* Estilos para el encabezado de la página */
+h1 {
+    color: #3a7bd5;
+    font-weight: 700;
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+    h1:after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 180px;
+        height: 3px;
+        background-image: linear-gradient(to right, #3a7bd5, #00d2ff);
+        border-radius: 3px;
+    }
+/* Estilos para la barra de busqueda */
+.search-filter {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
+}
+
+/* Estilos para el botón de Nuevo Character */
+.btn-success {
+    background-image: linear-gradient(to right, #28a745, #20c997);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
+    transition: all 0.3s ease;
+}
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(40, 167, 69, 0.4);
+    }
+
+
+
+/* Animación para cargar la tabla */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.table-custom tbody tr {
+    animation: fadeIn 0.3s ease-out forwards;
+    animation-delay: calc(var(--row-index, 0) * 0.05s);
+    opacity: 0;
+}
+
+/* Para crear un estilo cohesivo con los modales */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* Media queries para diseño responsive */
+@media (max-width: 576px) {
+    .search-filter .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+
+    .search-filter input[type="text"] {
+        width: 80%;
+        margin-left: 8px;
+    }
+
+    .search-filter .btn,
+    .search-filter a.btn-primary {
+        width: 80%;
+        margin-top:-10px;
+        margin-bottom:-10px;
+    }
+
+    .search-filter .me-2 {
+       margin-left:30px;
+        width: 100%;
+    }
+
+    .action-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+    .action-buttons .btn {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+    .truncate-description {
+            max-width: 200px;
+        }
+    }
+}

@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ChatAISystem.Models;
 
-public partial class CharAidbContext : DbContext
+public partial class ChatAIDBContext : DbContext
 {
-    public CharAidbContext()
+    public ChatAIDBContext()
     {
     }
 
-    public CharAidbContext(DbContextOptions<CharAidbContext> options)
+    public ChatAIDBContext(DbContextOptions<ChatAIDBContext> options)
         : base(options)
     {
     }
