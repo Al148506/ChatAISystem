@@ -191,7 +191,7 @@ public class ChatHub : Hub
             // 4. Ejecutar la solicitud y procesar la respuesta
             var response = await client.ExecuteAsync(request);
 
-            Console.WriteLine("Respuesta cruda de Gemini: " + response.Content);
+            Console.WriteLine("Respuesta crudaaa de Gemini: " + response.Content);
 
             if (response.IsSuccessful && !string.IsNullOrEmpty(response.Content))
             {
