@@ -9,7 +9,7 @@ An intuitive and user-friendly system designed to let you roleplay with your fav
 - Security: User account management, reCAPTCHA implementation for login protection, and robust form validations on both the frontend and backend.
 ## Screenshots
 ![Character](https://github.com/Al148506/ChatAISystem/blob/dbd6afdb98b8c66f6e022304fc152e1641abdcd9/CharacterLuke.png)
-![Character](https://github.com/Al148506/ChatAISystem/blob/d9bf46125e9de7cb1297993505d163bca735158a/ConversationLuke.png)
+![Chat](https://github.com/Al148506/ChatAISystem/blob/d9bf46125e9de7cb1297993505d163bca735158a/ConversationLuke.png)
 
 
 ## Setup
