@@ -102,6 +102,23 @@
     max-width: 300px; /* Limita el ancho para mejor aspecto */
 }
 
+/* Truncar descripción */
+.truncate-name {
+    max-width: 100%;
+    display: -webkit-box;
+    -webkit-line-clamp: 1; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #495057;
+    text-align: left;
+    margin: 0 auto;
+    max-width: 300px; /* Limita el ancho para mejor aspecto */
+}
+
 /* Imagen de avatar */
 .avatar-img {
     width: 80px;
@@ -256,6 +273,75 @@ h1 {
 .form-group {
     margin-bottom: 20px;
 }
+/* Estilos generales para los botones de paginación */
+.btn-prev, .btn-next {
+    padding: 3px 6px;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Estilo para el botón "Anterior" */
+.btn-prev {
+    background-color: #007bff;
+    color: white;
+    border: 2px solid #007bff;
+}
+
+    .btn-prev:hover:not(.disabled) {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateX(-5px);
+    }
+
+/* Estilo para el botón "Siguiente" */
+.btn-next {
+    background-color: #007bff;
+    color: white;
+    border: 2px solid #007bff;
+}
+
+    .btn-next:hover:not(.disabled) {
+        background-color: #0056b3;
+        border-color: #0056b3;
+        transform: translateX(5px);
+    }
+
+    /* Estilo para los botones deshabilitados */
+    .btn-prev.disabled, .btn-next.disabled {
+        background-color: #cccccc;
+        border-color: #cccccc;
+        color: #666666;
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+/* Estilo para el texto de la página */
+.text-pages {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333333;
+    margin: 0 15px;
+}
+
+/* Efecto de hover para los íconos */
+.btn-prev i, .btn-next i {
+    transition: transform 0.3s ease;
+}
+
+.btn-prev:hover:not(.disabled) i {
+    transform: translateX(-5px);
+}
+
+.btn-next:hover:not(.disabled) i {
+    transform: translateX(5px);
+}
 
 /* Media queries para diseño responsive */
 @media (max-width: 576px) {
@@ -287,12 +373,24 @@ h1 {
         }
 
     .action-buttons .btn {
-                width: 100%;
-                margin-bottom: 5px;
-            }
-
-    .truncate-description {
-            max-width: 200px;
-        }
+        width: 100%;
+        margin-bottom: 5px;
     }
+    /* Modificar el contenedor de paginación */
+    /*.pagination-container {
+        justify-content: space-between !important;
+        flex-wrap: wrap;
+        padding: 0 5px;
+    }*/
+        /* Ajustar botones de paginación */
+    /*.btn-prev, .btn-next {
+        padding: 6px 8px;
+        font-size: 0.9rem;
+    }*/
+    
+
+    th.description, td.description, .text-pages {
+        display: none;
+    }
+    
 }
