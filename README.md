@@ -8,7 +8,7 @@ Chat: Enjoy a modern interface that allows you to effortlessly switch between ch
 Bot Configuration: The bot is configured to remember past conversations, maintain its assigned role, and respond appropriately to the situation.
 Security: User account management, reCAPTCHA implementation for login protection, and robust form validations on both the frontend and backend.
 ## Screenshots
- ![Character]([image_url](https://github.com/Al148506/ChatAISystem/blob/dbd6afdb98b8c66f6e022304fc152e1641abdcd9/CharacterLuke.png))
+![Character](https://github.com/Al148506/ChatAISystem/blob/dbd6afdb98b8c66f6e022304fc152e1641abdcd9/CharacterLuke.png)
 
 
 ## Setup
