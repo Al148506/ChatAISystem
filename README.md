@@ -3,10 +3,10 @@ An intuitive and user-friendly system designed to let you roleplay with your fav
 
 ### Features
 
-Character Management: Easily record, view, and update your character information with a seamless and efficient interface.
-Chat: Enjoy a modern interface that allows you to effortlessly switch between characters, search for any character, and read your chats comfortably.
-Bot Configuration: The bot is configured to remember past conversations, maintain its assigned role, and respond appropriately to the situation.
-Security: User account management, reCAPTCHA implementation for login protection, and robust form validations on both the frontend and backend.
+- Character Management: Easily record, view, and update your character information with a seamless and efficient interface.
+- Chat: Enjoy a modern interface that allows you to effortlessly switch between characters, search for any character, and read your chats comfortably.
+- Bot Configuration: The bot is configured to remember past conversations, maintain its assigned role, and respond appropriately to the situation.
+- Security: User account management, reCAPTCHA implementation for login protection, and robust form validations on both the frontend and backend.
 ## Screenshots
 ![Character](https://github.com/Al148506/ChatAISystem/blob/dbd6afdb98b8c66f6e022304fc152e1641abdcd9/CharacterLuke.png)
 ![Character](https://github.com/Al148506/ChatAISystem/blob/d9bf46125e9de7cb1297993505d163bca735158a/ConversationLuke.png)
