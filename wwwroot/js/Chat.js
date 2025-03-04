@@ -14,7 +14,10 @@ let loading = false; // Evita múltiples cargas al mismo tiempo
 function selectCharacter(id, name) {
     characterId = parseInt(id, 10); // Asignar el ID del personaje seleccionado
     document.getElementById("characterId").value = id;
-    document.getElementById("chatTitle").innerText = `Chat con ${name}`;
+    document.getElementById("chatTitle").innerText = `Chat with ${name}`;
+    let messageInput = document.getElementById("messageInput");
+    messageInput.disabled = false;
+    messageInput.placeholder = `Write a massage for ${name}...`;
     page = 1; // Reiniciar la página a 1
     document.getElementById("chatBox").innerHTML = ""; // Limpiar el chatBox
     loadChatHistory(); // Cargar los últimos 10 mensajes

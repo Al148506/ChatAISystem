@@ -102,16 +102,16 @@
            asp-route-pageNumber="@(Model.PageIndex - 1)"
            asp-route-currentFilter="@ViewData["CurrentFilter"]"
            class="btn-prev btn-outline-primary @prevDisabled">
-            <i class="fas fa-chevron-left"></i> Anterior
+            <i class="fas fa-chevron-left"></i> Previous
         </a>
 
-        <span class="text-muted text-pages">Página @Model.PageIndex de @Model.TotalPages</span>
+        <span class="text-muted text-pages">Page @Model.PageIndex of @Model.TotalPages</span>
 
         <a asp-action="Index"
            asp-route-pageNumber="@(Model.PageIndex + 1)"
            asp-route-currentFilter="@ViewData["CurrentFilter"]"
            class="btn-next btn-outline-primary @nextDisabled">
-            Siguiente <i class="fas fa-chevron-right  btn-next"></i>
+            Next <i class="fas fa-chevron-right  btn-next"></i>
         </a>
     </div>
 </div>

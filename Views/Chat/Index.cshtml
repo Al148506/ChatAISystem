@@ -15,7 +15,7 @@
         <!-- Sidebar con  búsqueda  y lista de personajes -->
         <div class="sidebar" id="sidebar">
             <div class="search-container">
-                <input type="text" id="characterSearch" placeholder="Buscar personaje..." oninput="filterCharacters()" />
+                <input type="text" id="characterSearch" placeholder="Search character..." oninput="filterCharacters()" />
             </div>
             <div id="characters-list">
                 @foreach (var character in Model.Characters)
@@ -32,7 +32,7 @@
         <div class="chat-main">
             <!-- Barra superior -->
             <div class="chat-header">
-                <span id="chatTitle">Chat con IA</span>
+                <span id="chatTitle">Select a character</span>
             </div>
 
             <!-- Caja de mensajes -->
@@ -44,8 +44,8 @@
 
             <!-- Campo para escribir el mensaje -->
             <div class="input-container">
-                <input type="text" id="messageInput" placeholder="Escribe un mensaje" onkeydown="handleKeyPress(event)">
-                <button onclick="sendMessage()">Enviar</button>
+                <input type="text" id="messageInput" placeholder="Select a character" onkeydown="handleKeyPress(event)" disabled>
+                <button onclick="sendMessage()">Send</button>
             </div>
         </div>
     </div>
