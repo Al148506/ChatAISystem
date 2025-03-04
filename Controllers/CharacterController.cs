@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ChatAISystem.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ChatAISystem.Helper;
+using System.Text.RegularExpressions;
 
 namespace ChatAISystem.Controllers
 {
@@ -83,7 +84,10 @@ namespace ChatAISystem.Controllers
                 {
                     return Unauthorized(); // Devuelve error si no hay usuario autenticado
                 }
-
+                character.Name = Utilities.CleanField(character.Name);
+                character.Description = Utilities.CleanField(character.Description);
+                character.AvatarUrl = Utilities.CleanField(character.AvatarUrl);
+                character.AvatarUrl = Utilities.ValidateLinkImage(character.AvatarUrl) ? character.AvatarUrl : null;
                 character.CreatedAt = DateTime.UtcNow;
                 character.CreatedBy = userId.Value;
                 _context.Add(character);
