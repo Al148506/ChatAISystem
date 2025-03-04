@@ -2,7 +2,17 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
+<div class="container text-center mt-5">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p class="lead">
+        This AI chat system is designed to roleplay with the characters you have registered.
+    </p>
+    <p>
+        To start a conversation, access the <strong>"Chat"</strong> section in the top bar.
+        If you want to create, edit or delete a character, go to the <strong>"Characters"</strong> section.
+    </p>
+    <div class="mt-4">
+        <a href="/Chat" class="btn btn-primary btn-lg mx-2">Go to Chat</a>
+        <a href="/Character" class="btn btn-secondary btn-lg mx-2">Manage Characters</a>
+    </div>
 </div>

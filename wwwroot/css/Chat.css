@@ -10,7 +10,36 @@
     overflow: hidden;
     margin: 0 auto;
 }
+/* Estilos para el campo de búsqueda */
+.search-container {
+    padding: 10px;
+    position: sticky;
+    top: 0;
+    background-color: inherit;
+    z-index: 1;
+    border-bottom: 1px solid #e0e0e0;
+}
 
+#characterSearch {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+    #characterSearch:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+
+/* Ajuste para dar espacio al campo de búsqueda */
+#characters-list {
+    overflow-y: auto;
+    max-height: calc(100% - 60px);
+}
 /* Sidebar con lista de personajes */
 .sidebar {
     width: 280px;
@@ -52,6 +81,11 @@
     .sidebar .character-name {
         font-weight: 500;
         color: #333;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        width: 250px;
+        display: block;
+        overflow: hidden
     }
 
     .sidebar .character-status {
@@ -77,6 +111,10 @@
     align-items: center;
     justify-content: space-between;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
 }
 
 .chat-header-info {
@@ -237,12 +275,19 @@
     animation: messageIn 0.3s ease-out;
 }
 
+
 /* Diseño responsivo */
 @media (max-width: 768px) {
     .chat-container {
         height: 85vh;
         border-radius: 0;
 
+    }
+    .toggle-sidebar-btn {
+        top: 5px;
+        left: 5px;
+        width: 35px;
+        height: 35px;
     }
 
     .sidebar {

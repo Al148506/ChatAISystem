@@ -140,14 +140,24 @@ public class ChatHub : Hub
         try
         {
             // 1. Recuperar la descripción del personaje y el historial del chat
-            var messages = new List< APIMessage.Message>();
+            var messages = new List<APIMessage.Message>();
 
             // Obtener el personaje para su prompt inicial
             var character = await _dbContext.Characters.AsNoTracking().FirstOrDefaultAsync(c => c.Id == characterId);
             if (character?.Description != null)
             {
+                // Creamos un prompt más detallado que incluya instrucciones sobre el formato de acciones/emociones
+                string enhancedPrompt = $@"Actúa como el siguiente personaje: {character.Description}
+
+            Instrucciones adicionales:
+            1. Mantente siempre fiel a la personalidad, conocimientos y estilo de habla del personaje.
+            2. Muestra emociones, acciones físicas o expresiones corporales entre asteriscos. Ejemplo: *sonríe* o *mira pensativamente por la ventana*.
+            3. Integra estas acciones de forma natural en tu respuesta, no las agregues solo al final.
+            4. Nunca salgas del personaje ni menciones que eres una IA.
+            5. Responde de manera concisa y directa, como lo haría este personaje en una conversación real.";
+
                 // Usamos el rol "system" para dar instrucciones iniciales
-                messages.Add(new APIMessage.Message { role = "system", content = character.Description });
+                messages.Add(new APIMessage.Message { role = "system", content = enhancedPrompt });
             }
 
             // Obtener el historial de conversación (hasta 50 mensajes, por ejemplo)
@@ -167,7 +177,7 @@ public class ChatHub : Hub
             using var client = new RestClient(endpoint);
             var request = new RestRequest("", Method.Post)
             {
-                Timeout = TimeSpan.FromSeconds(15)// 15 segundos de timeout
+                Timeout = TimeSpan.FromSeconds(15) // 15 segundos de timeout
             };
             request.AddHeader("Content-Type", "application/json");
 
@@ -185,12 +195,10 @@ public class ChatHub : Hub
                 }
             }
             };
-
             request.AddJsonBody(requestBody);
 
             // 4. Ejecutar la solicitud y procesar la respuesta
             var response = await client.ExecuteAsync(request);
-
             Console.WriteLine("Respuesta cruda de Gemini: " + response.Content);
 
             if (response.IsSuccessful && !string.IsNullOrEmpty(response.Content))
@@ -204,6 +212,12 @@ public class ChatHub : Hub
                         var outputText = candidate.content.parts.First().text;
                         if (!string.IsNullOrEmpty(outputText))
                         {
+                            // Asegurarse de que la respuesta venga del personaje (eliminar prefijos como "assistant:")
+                            if (outputText.StartsWith("assistant:", StringComparison.OrdinalIgnoreCase))
+                            {
+                                outputText = outputText.Substring("assistant:".Length).Trim();
+                            }
+
                             return outputText;
                         }
                     }

@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using ChatAISystem.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using ChatAISystem.Helper;
+using System.Text.RegularExpressions;
 
 namespace ChatAISystem.Controllers
 {
@@ -18,12 +20,12 @@ namespace ChatAISystem.Controllers
 
         // GET: Character
         // GET: Character
-        public async Task<IActionResult> Index(string searchName, string currentFilter)
+        public async Task<IActionResult> Index(string searchName, string currentFilter, int? pageNumber)
         {
             // Si se envía un nuevo término de búsqueda, reinicia la paginación
             if (searchName != null)
             {
-                // Nueva búsqueda, resetear
+                pageNumber = 1;
                 currentFilter = searchName;
             }
             else
@@ -44,8 +46,11 @@ namespace ChatAISystem.Controllers
             {
                 characterQuery = characterQuery.Where(c => c.Name.Contains(searchName));
             }
+            // Definir el tamaño de la página (5 registros por página)
+            int pageSize = 4;
 
-            return View(await characterQuery.ToListAsync());
+            // Utilizar PaginatedList para manejar la paginación
+            return View(await Pagination.PaginatedList<Character>.CreateAsync(characterQuery.AsNoTracking(), pageNumber ?? 1, pageSize));
         }
 
         [HttpGet]
@@ -79,7 +84,10 @@ namespace ChatAISystem.Controllers
                 {
                     return Unauthorized(); // Devuelve error si no hay usuario autenticado
                 }
-
+                character.Name = Utilities.CleanField(character.Name);
+                character.Description = Utilities.CleanField(character.Description);
+                character.AvatarUrl = Utilities.CleanField(character.AvatarUrl);
+                character.AvatarUrl = Utilities.ValidateLinkImage(character.AvatarUrl) ? character.AvatarUrl : null;
                 character.CreatedAt = DateTime.UtcNow;
                 character.CreatedBy = userId.Value;
                 _context.Add(character);
@@ -180,7 +188,15 @@ namespace ChatAISystem.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var character = await _context.Characters.FindAsync(id);
+            //var character = await _context.Characters.FindAsync(id);
+
+            var character = await _context.Characters
+                .Include(c => c.Conversations)
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (character == null) {
+                return NotFound();
+            }
+            _context.Conversations.RemoveRange(character.Conversations); // Elimina las conversaciones
             _context.Characters.Remove(character);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

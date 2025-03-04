@@ -1,5 +1,6 @@
 ﻿using ChatAISystem.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -39,6 +40,27 @@ namespace ChatAISystem.Helper
             return emailRegex.IsMatch(email);
         }
 
+        public static string CleanField(string field)
+        {
+            if (string.IsNullOrEmpty(field))
+            {
+                throw new ArgumentNullException(nameof(field), "El texto no puede ser nulo o vacío.");
+            }
+            field = field.Trim();
+            field = Regex.Replace(field, @"\s+", " ");
+            return field;
+
+        }
+
+        public static bool ValidateLinkImage(string url)
+        {
+            if (string.IsNullOrEmpty(url)) {
+                throw new ArgumentNullException(nameof(url), "El texto no puede ser nulo o vacío.");
+            }
+            var urlRegex = new Regex(@"(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png)");
+            return urlRegex.IsMatch(url);
+        }
+
         public async Task<bool> ValidateCaptcha(string captchaResponse, IConfiguration _configuration)
         {
             var secretKey = _configuration.GetValue<string>("GoogleReCaptcha:SecretKey");
@@ -54,5 +76,6 @@ namespace ChatAISystem.Helper
                 return captchaResult != null && captchaResult.success;
             }
         }
+
     }
 }
