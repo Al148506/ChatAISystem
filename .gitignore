@@ -367,3 +367,4 @@ appsettings.*.json
 appsettings.Development.json
 appsettings.Production.json
 
+/Views/Character/Create.cshtml
