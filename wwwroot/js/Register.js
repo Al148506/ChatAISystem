@@ -3,13 +3,11 @@
 
     limpiarErrores();
 
-    const emailField = document.querySelector('input[name="Email"]');
-    const usernameField = document.querySelector('input[name="Username"]');
-    const passwordField = document.querySelector('input[name="Password"]');
-    const confirmPasswordField = document.querySelector('input[name="ConfirmPassword"]');
+    const fields = ['Email', 'Username', 'Password', 'ConfirmPassword'].map(name => document.querySelector(`input[name="${name}"]`));
+    const [emailField, usernameField, passwordField, confirmPasswordField] = fields;
 
     // Si algún campo está vacío, mostrar el mensaje general
-    if (!emailField.value.trim() || !usernameField.value.trim() || !passwordField.value.trim() || !confirmPasswordField.value.trim()) {
+    if (fields.some(field => !field.value.trim())) {
         mostrarErrorGeneral("Favor de completar todos los campos.");
         return;
     }
@@ -23,21 +21,40 @@
     const formData = new FormData(this);
 
     try {
-        const response = await fetch('/Register/Register', {
+        const response = await fetch('/Register/Create', {
             method: "POST",
             body: formData
         });
+        // Clonar la respuesta para depuración
+        const responseClone = response.clone(); 
+        // Captura la respuesta en texto
+        const text = await responseClone.text();
+        console.log("Respuesta del servidor:", text); // 👈 Esto mostrará la respuesta en consola
+
+        // Verifica si la respuesta es exitosa
+        if (!response.ok) {
+            console.error("Error en la solicitud:", response.status);
+            mostrarErrorGeneral("Error en el servidor. Intente más tarde.");
+            return;
+        }
 
         const result = await response.json();
+
         if (result.success) {
             alert(result.message);
             window.location.href = result.redirectUrl;
         } else {
             mostrarErrorGeneral(result.message);
+            if (typeof grecaptcha !== "undefined") {
+                grecaptcha.reset();
+            }
+      
         }
     } catch (error) {
         console.error("Error de red:", error);
+        mostrarErrorGeneral("Error en la conexión con el servidor.");
     }
+
 });
 
 // ✅ Funciones auxiliares

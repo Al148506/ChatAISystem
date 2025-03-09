@@ -12,7 +12,7 @@ namespace ChatAISystem.Permissions
             // Obtener la ruta actual
             var route = context.HttpContext.Request.Path.Value?.ToLower();
             // Excluir rutas específicas del filtro
-            if (route == "/" || route == "/login/index" || route == "/login/validatelogin" || route == "/register")
+            if (route == "/" || route == "/login/index" || route == "/login/validatelogin" || route == "/register" || route == "/register/create")
             {
                 base.OnActionExecuting(context);
                 return;

@@ -57,7 +57,6 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
 // Asegúrate de usar la sesión y la política de cookies
 app.UseSession();
 app.UseCookiePolicy();
