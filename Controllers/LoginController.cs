@@ -55,6 +55,7 @@ namespace ChatAISystem.Controllers
                 HttpContext.Session.SetInt32("IdUser", result.Id);
                 HttpContext.Session.SetString("UserMail", result.Email);
                 HttpContext.Session.SetString("UserName", result.Username);
+                HttpContext.Session.SetString("Role", result.Role);
                 HttpContext.Response.Cookies.Append("SessionSecurity", Guid.NewGuid().ToString(), new CookieOptions { HttpOnly = true, Secure = true });
 
                 return Json(new { success = true, redirectUrl = Url.Action("Index", "Home") });

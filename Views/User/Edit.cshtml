@@ -1,0 +1,35 @@
+﻿@model ChatAISystem.Models.User
+<link href="~/css/Form.css" rel="stylesheet" />
+<div class="form-container">
+    <h1 class="form-title">Edit User</h1>
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="@Model.Id" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" name="CreatedBy" value="@Model.CreatedAt" />
+        <div class="form-group">
+            <label asp-for="Username" class="control-label">Username</label>
+            <input asp-for="Username" class="form-control" required />
+        </div>
+        <div class="form-group">
+            <label asp-for="Email" class="control-label">Email</label>
+            <input asp-for="Email" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="PasswordHash" class="control-label">Password</label>
+            <input type="password" asp-for="PasswordHash" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Role" class="control-label">Role</label>
+            <select asp-for="Role" class="form-control">
+                <option value="Admin">Admin</option>
+                <option value="User">User</option>
+            </select>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+            <button type="submit" class="btn btn-primary mt-3">Edit</button>
+            <a asp-action="Index" asp-controller="User" class="btn btn-secondary mt-2">Cancel</a>
+        </div>
+    </form>
+</div>
+

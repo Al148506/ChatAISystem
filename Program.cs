@@ -61,7 +61,7 @@ app.UseRouting();
 app.UseSession();
 app.UseCookiePolicy();
 app.UseAuthorization();
-
+app.UseDeveloperExceptionPage();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Login}/{action=Index}/{id?}");

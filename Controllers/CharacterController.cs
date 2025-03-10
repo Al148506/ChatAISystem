@@ -4,6 +4,7 @@ using ChatAISystem.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using ChatAISystem.Helper;
 using System.Text.RegularExpressions;
+using ChatAISystem.Permissions;
 
 namespace ChatAISystem.Controllers
 {
@@ -20,6 +21,7 @@ namespace ChatAISystem.Controllers
 
         // GET: Character
         // GET: Character
+
         public async Task<IActionResult> Index(string searchName, string currentFilter, int? pageNumber)
         {
             // Si se envía un nuevo término de búsqueda, reinicia la paginación
