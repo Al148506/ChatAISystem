@@ -6,17 +6,20 @@ using Microsoft.EntityFrameworkCore;
 using System.Data;
 using ChatAISystem.Helper;
 using Microsoft.Extensions.Configuration;
+using ChatAISystem.Services.Interfaces;
 namespace ChatAISystem.Controllers
 {
     public class RegisterController : Controller
     {
+        private readonly IUserValidationService _userValidationService;
         private readonly ChatAIDBContext _context;
         private readonly IConfiguration _configuration;
 
-        public RegisterController(ChatAIDBContext context, IConfiguration configuration)
+        public RegisterController(ChatAIDBContext context, IConfiguration configuration, IUserValidationService userValidationService)
         {
             _context = context;
             _configuration = configuration;
+            _userValidationService = userValidationService;
         }
         public IActionResult Index()
         {
@@ -26,10 +29,10 @@ namespace ChatAISystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(RegisterViewModel model)
         {
-            var validationResponse = await ValidateRegistration(model);
-            if (!validationResponse.success)
+            var validationResponse = _userValidationService.ValidateRegistrationAsync(model, Request.Form);
+            if (!validationResponse.Result.success)
             {
-                return Json(new { success = false, message = validationResponse.message });
+                return Json(new { success = false, message = validationResponse.Result.message});
             }
 
             try
@@ -58,50 +61,6 @@ namespace ChatAISystem.Controllers
             }
         }
 
-
-        private async Task<(bool success, string message)> ValidateRegistration(RegisterViewModel model)
-        {
-            if (model == null)
-            {
-                return (false, "Datos inválidos.");
-            }
-
-            var captchaResponse = Request.Form["g-recaptcha-response"];
-
-            if (string.IsNullOrEmpty(captchaResponse))
-            {
-                return (false, "Captcha no encontrado en el formulario.");
-            }
-
-            var utilities = new Utilities();
-            var isCaptchaValid = await utilities.ValidateCaptcha(captchaResponse, _configuration);
-            if (!isCaptchaValid)
-            {
-                return (false, "Por favor, resuelva el reCAPTCHA para continuar.");
-            }
-
-            if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
-            {
-                return (false, "Por favor, ingrese todos los datos.");
-            }
-
-            if (!Utilities.IsValidEmail(model.Email))
-            {
-                return (false, "Ingrese un correo electrónico válido.");
-            }
-
-            if (model.Password.Length < 6)
-            {
-                return (false, "La contraseña debe tener al menos 6 caracteres.");
-            }
-
-            if (model.Password != model.ConfirmPassword)
-            {
-                return (false, "Las contraseñas no coinciden.");
-            }
-
-            return (true, "Validación exitosa");
-        }
     }
 }
 

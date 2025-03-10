@@ -2,7 +2,8 @@ using ChatAISystem;
 using ChatAISystem.Models;
 using ChatAISystem.Permissions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;  // Para acceder a CookieSecurePolicy y SameSiteMode
+using Microsoft.AspNetCore.Http;
+using ChatAISystem.Services.Interfaces;  // Para acceder a CookieSecurePolicy y SameSiteMode
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
 });
+
+builder.Services.AddScoped<IUserValidationService, UserValidationService>();
 
 var app = builder.Build();
 
