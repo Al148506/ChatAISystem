@@ -13,7 +13,7 @@ public partial class User
 
     public string PasswordHash { get; set; } = null!;
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public string Role { get; set; } = "User";
 

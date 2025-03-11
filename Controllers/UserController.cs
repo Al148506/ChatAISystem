@@ -1,5 +1,6 @@
 ﻿using ChatAISystem.Helper;
 using ChatAISystem.Models;
+using ChatAISystem.Models.ViewModels;
 using ChatAISystem.Permissions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -65,50 +66,87 @@ namespace ChatAISystem.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var user = await _context.Users.FindAsync(id);
-            return View(user);
+            if (user == null)
+            {
+                return NotFound();
+            }
+            var userViewModel = new AdminRegisterViewModel
+            {
+                Id = user.Id, // Asegurar que se pasa el Id
+                Username = user.Username,
+                Email = user.Email,
+                Password = user.PasswordHash,
+                Role = user.Role,
+                CreatedAt = user.CreatedAt
+            };
+            return View(userViewModel);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Username,Email,PasswordHash,Role")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Username,Email,PasswordHash,Role")] AdminRegisterViewModel userViewModel)
         {
-            if (id != user.Id)
+            if (id != userViewModel.Id)
             {
                 return NotFound();
+            }
+            // 🔍 DEBUG: Ver si hay errores en el ModelState
+            if (!ModelState.IsValid)
+            {
+                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine($"Error: {error.ErrorMessage}");
+                }
             }
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    user.PasswordHash = Utilities.ConverterSha256(user.PasswordHash);
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!UserExists(user.Id))
+                    // 🔹 Obtener el usuario original de la base de datos
+                    var existingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
+                    if (existingUser == null)
                     {
                         return NotFound();
                     }
-                    else
+
+                    // 🔹 Actualizar solo las propiedades permitidas
+                    existingUser.Username = userViewModel.Username;
+                    existingUser.Email = userViewModel.Email;
+                    existingUser.Role = userViewModel.Role;
+
+                    // 🔹 Si la contraseña fue modificada, actualizarla
+                    if (!string.IsNullOrWhiteSpace(userViewModel.Password))
                     {
-                        throw;
+                        existingUser.PasswordHash = Utilities.ConverterSha256(userViewModel.Password);
                     }
+
+                    _context.Update(existingUser);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index)); // Redirige a la lista de usuarios
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"ERROR: {ex.Message}");
+                    throw;
+                }
             }
-            return View(user);
+
+            return View(userViewModel); // Si hay errores de validación, recarga la vista con los datos
         }
 
-        [HttpPost]
+
+        [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var user = await _context.Users
+               .Include(c => c.Conversations)
+               .FirstOrDefaultAsync(c => c.Id == id);
             if (user == null)
             {
                 return NotFound();
             }
+            _context.Conversations.RemoveRange(user.Conversations); // Elimina las conversaciones
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

@@ -18,5 +18,6 @@ namespace ChatAISystem.Models.ViewModels
         [DataType(DataType.Password)]
         [Compare("Password", ErrorMessage = "Las contraseñas no coinciden.")]
         public string ConfirmPassword { get; set; }
+
     }
 }
