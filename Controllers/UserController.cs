@@ -16,11 +16,11 @@ namespace ChatAISystem.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(string searchName, string currentFilter, int? pageNumber)
+        public async Task<IActionResult> Index(string searchName, string currentFilter, int? numpag)
         {
             if (searchName != null)
             {
-                pageNumber = 1;
+                numpag = 1;
                 currentFilter = searchName;
             }
             else
@@ -38,9 +38,9 @@ namespace ChatAISystem.Controllers
                 userQuery = userQuery.Where(u => u.Username.Contains(searchName));
             }
 
-            int pageSize = 4;
+            int regQuantity = 4;
 
-            return View(await Pagination.PaginatedList<User>.CreateAsync(userQuery.AsNoTracking(), pageNumber ?? 1, pageSize));
+            return View(await Pagination<User>.CreatePagination(userQuery.AsNoTracking(), numpag ?? 1, regQuantity));
         }
 
         [HttpGet]
@@ -51,17 +51,40 @@ namespace ChatAISystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Username,Email,PasswordHash,Role")] User user)
+        public async Task<IActionResult> Create([Bind("Username,Email,Password,Role")] AdminRegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            if (_context.Users.Any(u => u.Email == model.Email))
             {
-                user.PasswordHash = Utilities.ConverterSha256(user.PasswordHash);
-                _context.Add(user);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                ModelState.AddModelError("Email", "This email has already been registered.");
             }
-            return View(user);
+            if (!ModelState.IsValid)
+            {
+                // Muestra los errores en la consola de depuración
+                foreach (var error in ModelState)
+                {
+                    foreach (var subError in error.Value.Errors)
+                    {
+                        Console.WriteLine($"Error en {error.Key}: {subError.ErrorMessage}");
+                    }
+                }
+
+                // Devuelve la vista con los datos para que el usuario corrija los errores
+                return View(model);
+            }
+
+            var user = new User
+            {
+                Username = model.Username,
+                Email = model.Email,
+                PasswordHash = Utilities.ConverterSha256(model.Password),
+                Role = model.Role
+            };
+
+            _context.Add(user);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
+
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
@@ -70,39 +93,42 @@ namespace ChatAISystem.Controllers
             {
                 return NotFound();
             }
-            var userViewModel = new AdminRegisterViewModel
+            var userViewModel = new AdminEditViewModel
             {
                 Id = user.Id, // Asegurar que se pasa el Id
                 Username = user.Username,
                 Email = user.Email,
                 Password = user.PasswordHash,
                 Role = user.Role,
-                CreatedAt = user.CreatedAt
+
             };
             return View(userViewModel);
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Username,Email,PasswordHash,Role")] AdminRegisterViewModel userViewModel)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Username,Email,PasswordHash,Role")] AdminEditViewModel model)
         {
-            if (id != userViewModel.Id)
+            if (_context.Users.Any(u => u.Email == model.Email))
             {
-                return NotFound();
+                ModelState.AddModelError("Email", "This email has already been registered.");
             }
-            // 🔍 DEBUG: Ver si hay errores en el ModelState
             if (!ModelState.IsValid)
             {
-                foreach (var error in ModelState.Values.SelectMany(v => v.Errors))
+                // Muestra los errores en la consola de depuración
+                foreach (var error in ModelState)
                 {
-                    Console.WriteLine($"Error: {error.ErrorMessage}");
+                    foreach (var subError in error.Value.Errors)
+                    {
+                        Console.WriteLine($"Error en {error.Key}: {subError.ErrorMessage}");
+                    }
                 }
+
+                // Devuelve la vista con los datos para que el usuario corrija los errores
+                return View(model);
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    // 🔹 Obtener el usuario original de la base de datos
+             
+            // 🔹 Obtener el usuario original de la base de datos
                     var existingUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id);
                     if (existingUser == null)
                     {
@@ -110,28 +136,21 @@ namespace ChatAISystem.Controllers
                     }
 
                     // 🔹 Actualizar solo las propiedades permitidas
-                    existingUser.Username = userViewModel.Username;
-                    existingUser.Email = userViewModel.Email;
-                    existingUser.Role = userViewModel.Role;
+                    existingUser.Username = model.Username;
+                    existingUser.Email = model.Email;
+                    existingUser.Role = model.Role;
 
                     // 🔹 Si la contraseña fue modificada, actualizarla
-                    if (!string.IsNullOrWhiteSpace(userViewModel.Password))
+                    if (!string.IsNullOrWhiteSpace(model.Password))
                     {
-                        existingUser.PasswordHash = Utilities.ConverterSha256(userViewModel.Password);
+                        existingUser.PasswordHash = Utilities.ConverterSha256(model.Password);
                     }
 
                     _context.Update(existingUser);
                     await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Index)); // Redirige a la lista de usuarios
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"ERROR: {ex.Message}");
-                    throw;
-                }
-            }
-
-            return View(userViewModel); // Si hay errores de validación, recarga la vista con los datos
+                    return RedirectToAction(nameof(Index)); // Redirige a la lista de usuario
+        
+            
         }
 
 
@@ -155,6 +174,13 @@ namespace ChatAISystem.Controllers
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.Id == id);
+        }
+
+        [HttpGet]
+        public JsonResult IsEmailAvailable(string email)
+        {
+            bool exists = _context.Users.Any(u => u.Email == email);
+            return Json(!exists); // Devuelve true si el email NO existe, false si ya está registrado
         }
     }
 }

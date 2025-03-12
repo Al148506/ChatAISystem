@@ -22,12 +22,12 @@ namespace ChatAISystem.Controllers
         // GET: Character
         // GET: Character
 
-        public async Task<IActionResult> Index(string searchName, string currentFilter, int? pageNumber)
+        public async Task<IActionResult> Index(string searchName, string currentFilter, int? numpag)
         {
             // Si se envía un nuevo término de búsqueda, reinicia la paginación
             if (searchName != null)
             {
-                pageNumber = 1;
+                numpag = 1;
                 currentFilter = searchName;
             }
             else
@@ -49,10 +49,10 @@ namespace ChatAISystem.Controllers
                 characterQuery = characterQuery.Where(c => c.Name.Contains(searchName));
             }
             // Definir el tamaño de la página (5 registros por página)
-            int pageSize = 4;
+            int regQuantity = 4;
 
             // Utilizar PaginatedList para manejar la paginación
-            return View(await Pagination.PaginatedList<Character>.CreateAsync(characterQuery.AsNoTracking(), pageNumber ?? 1, pageSize));
+            return View(await Pagination<Character>.CreatePagination(characterQuery.AsNoTracking(), numpag ?? 1, regQuantity));
         }
 
         [HttpGet]

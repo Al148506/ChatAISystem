@@ -1,0 +1,71 @@
+﻿@model ChatAISystem.Helper.IPagination
+
+<div class="d-flex justify-content-center my-3">
+    <!-- Botón Anterior -->
+    <a asp-action="Index"
+       asp-route-numpag="@(Model.InitialPage - 1)"
+       asp-route-searchName="@ViewData["CurrentFilter"]"
+       asp-route-orderFilter="@ViewData["CurrentOrder"]"
+       asp-route-actionType="@ViewData["currentActionType"]"
+       class="btn btn-primary @(Model.InitialPage <= 1 ? "disabled" : "")">
+        Back
+    </a>
+
+    @{
+        int totalPages = Model.TotalPages;
+        int currentPage = Model.InitialPage;
+        int maxPageButtons = 4;
+        int startPage = Math.Max(1, currentPage - maxPageButtons / 2);
+        int endPage = Math.Min(totalPages, startPage + maxPageButtons - 1);
+        startPage = Math.Max(1, endPage - maxPageButtons + 1);
+    }
+
+    @if (startPage > 1)
+    {
+        <a asp-action="Index"
+           asp-route-numpag="1"
+           asp-route-searchName="@ViewData["CurrentFilter"]"
+           asp-route-orderFilter="@ViewData["CurrentOrder"]"
+           asp-route-actionType="@ViewData["currentActionType"]"
+           class="btn btn-outline-primary mx-1">1</a>
+        @if (startPage > 2)
+        {
+            <span class="mx-1">...</span>
+        }
+    }
+
+    @for (var i = startPage; i <= endPage; i++)
+    {
+        var activePage = (i == currentPage) ? "active" : "";
+        <a asp-action="Index"
+           asp-route-numpag="@i"
+           asp-route-searchName="@ViewData["CurrentFilter"]"
+           asp-route-orderFilter="@ViewData["CurrentOrder"]"
+           asp-route-actionType="@ViewData["currentActionType"]"
+           class="btn btn-outline-primary mx-1 @activePage">@i</a>
+    }
+
+    @if (endPage < totalPages)
+    {
+        @if (endPage < totalPages - 1)
+        {
+            <span class="mx-1">...</span>
+        }
+        <a asp-action="Index"
+           asp-route-numpag="@totalPages"
+           asp-route-searchName="@ViewData["CurrentFilter"]"
+           asp-route-orderFilter="@ViewData["CurrentOrder"]"
+           asp-route-actionType="@ViewData["currentActionType"]"
+           class="btn btn-outline-primary mx-1">@totalPages</a>
+    }
+
+    <!-- Botón Siguiente -->
+    <a asp-action="Index"
+       asp-route-numpag="@(Model.InitialPage + 1)"
+       asp-route-searchName="@ViewData["CurrentFilter"]"
+       asp-route-orderFilter="@ViewData["CurrentOrder"]"
+       asp-route-actionType="@ViewData["currentActionType"]"
+       class="btn btn-primary @(Model.InitialPage >= Model.TotalPages ? "disabled" : "")">
+        Next
+    </a>
+</div>

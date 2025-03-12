@@ -1,4 +1,4 @@
-﻿@model ChatAISystem.Helper.Pagination.PaginatedList<User>
+﻿@model ChatAISystem.Helper.Pagination<User>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="~/css/CustomIndex.css" />
 <link rel="stylesheet" href="~/css/Modal.css" />
@@ -98,28 +98,7 @@
         </table>
     </div>
     <!-- Pagination -->
-    <div class="pagintion-container d-flex justify-content-md-around justify-content-sm-around  align-items-center">
-        @{
-            var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
-            var nextDisabled = !Model.HasNextPage ? "disabled" : "";
-        }
-
-        <a asp-action="Index"
-           asp-route-pageNumber="@(Model.PageIndex - 1)"
-           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-           class="btn-prev btn-outline-primary @prevDisabled">
-            <i class="fas fa-chevron-left"></i> Previous
-        </a>
-
-        <span class="text-muted text-pages">Page @Model.PageIndex of @Model.TotalPages</span>
-
-        <a asp-action="Index"
-           asp-route-pageNumber="@(Model.PageIndex + 1)"
-           asp-route-currentFilter="@ViewData["CurrentFilter"]"
-           class="btn-next btn-outline-primary @nextDisabled">
-            Next <i class="fas fa-chevron-right  btn-next"></i>
-        </a>
-    </div>
+    @await Html.PartialAsync("_Pagination", Model)
 </div>
 <script>
     function confirmDelete(userId) {
