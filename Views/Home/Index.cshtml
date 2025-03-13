@@ -1,18 +1,80 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+<link href="~/css/Home.css" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+<div class="home-container">
+    <div class="hero-section">
+        <div class="container py-5">
+            <div class="row align-items-center">
+                <div class="col-lg-6 text-center text-lg-start">
+                    <h1 class="display-3 fw-bold text-gradient mb-3">Bienvenido a ChatAISystem</h1>
+                    <p class="lead fs-4 mb-4">
+                        Sistema de chat IA diseñado para conversaciones inmersivas con los personajes que has creado.
+                    </p>
+                    <div class="d-flex flex-wrap justify-content-center justify-content-lg-start gap-3 mb-5">
+                        <a href="/Chat" class="btn btn-primary btn-lg px-4 rounded-pill">
+                            <i class="bi bi-chat-dots-fill me-2"></i>Iniciar Chat
+                        </a>
+                        <a href="/Character" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+                            <i class="bi bi-people-fill me-2"></i>Personajes
+                        </a>
+                        <a href="/User" class="btn btn-outline-secondary btn-lg px-4 rounded-pill">
+                            <i class="bi bi-person-fill-gear me-2"></i>Usuarios
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 d-none d-lg-block">
+                    <div class="illustration-container text-center">
+                        <img src="~/Images/RobotIA.jpeg" alt="AI Chat Illustration" class="img-fluid rounded-4 shadow-lg" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div class="container text-center mt-5">
-    <h1 class="display-4">Welcome</h1>
-    <p class="lead">
-        This AI chat system is designed to roleplay with the characters you have registered.
-    </p>
-    <p>
-        To start a conversation, access the <strong>"Chat"</strong> section in the top bar.
-        If you want to create, edit or delete a character, go to the <strong>"Characters"</strong> section.
-    </p>
-    <div class="mt-4">
-        <a href="/Chat" class="btn btn-primary btn-lg mx-2">Go to Chat</a>
-        <a href="/Character" class="btn btn-secondary btn-lg mx-2">Manage Characters</a>
+    <div class="features-section py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5 fw-bold">¿Cómo funciona?</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                                <i class="bi bi-chat-square-text-fill"></i>
+                            </div>
+                            <h3 class="h5 card-title">Iniciar Conversación</h3>
+                            <p class="card-text">Accede a la sección <strong>"Chat"</strong> para comenzar una conversación con cualquiera de tus personajes creados.</p>
+                            <a href="/Chat" class="btn btn-sm btn-link text-decoration-none">Ir a Chat →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-secondary bg-gradient text-white rounded-circle mb-3">
+                                <i class="bi bi-person-plus-fill"></i>
+                            </div>
+                            <h3 class="h5 card-title">Gestionar Personajes</h3>
+                            <p class="card-text">Crea, edita o elimina personajes en la sección <strong>"Characters"</strong> para personalizar tus experiencias de chat.</p>
+                            <a href="/Character" class="btn btn-sm btn-link text-decoration-none">Gestionar Personajes →</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center p-4">
+                            <div class="feature-icon bg-secondary bg-gradient text-white rounded-circle mb-3">
+                                <i class="bi bi-people-fill"></i>
+                            </div>
+                            <h3 class="h5 card-title">Administrar Usuarios</h3>
+                            <p class="card-text">Gestiona los usuarios del sistema en la sección <strong>"Users"</strong> para controlar el acceso al sistema.</p>
+                            <a href="/User" class="btn btn-sm btn-link text-decoration-none">Administrar Usuarios →</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+

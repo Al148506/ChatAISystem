@@ -20,3 +20,15 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.hover-effect:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.user-info {
+    font-size: 0.9rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+}

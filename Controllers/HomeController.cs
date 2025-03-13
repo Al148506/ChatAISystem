@@ -31,5 +31,14 @@ namespace ChatAISystem.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+        public IActionResult CloseSession()
+        {
+            // Limpiar toda la sesión
+            HttpContext.Session.Clear();
+
+            // Opcional: Redirigir al usuario a la página de inicio de sesión o de inicio
+            return RedirectToAction("Index", "Login");
+        }
+
     }
 }

@@ -1,0 +1,41 @@
+﻿.text-gradient {
+    background: linear-gradient(90deg, #4361ee, #3a0ca3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 3rem 0;
+}
+
+.feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    font-size: 1.75rem;
+}
+
+.card {
+    transition: transform 0.3s ease;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+    }
+
+.features-section {
+    border-radius: 30px 30px 0 0;
+    margin-top: -20px;
+}
+
+.btn-primary {
+    background: linear-gradient(90deg, #4361ee, #3a0ca3);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #3a0ca3, #4361ee);
+}
