@@ -5,8 +5,7 @@
     <a asp-action="Index"
        asp-route-numpag="@(Model.InitialPage - 1)"
        asp-route-searchName="@ViewData["CurrentFilter"]"
-       asp-route-orderFilter="@ViewData["CurrentOrder"]"
-       asp-route-actionType="@ViewData["currentActionType"]"
+       asp-route-sortOrder="@ViewData["SortOrder"]"
        class="btn btn-primary @(Model.InitialPage <= 1 ? "disabled" : "")">
         Back
     </a>
@@ -25,8 +24,7 @@
         <a asp-action="Index"
            asp-route-numpag="1"
            asp-route-searchName="@ViewData["CurrentFilter"]"
-           asp-route-orderFilter="@ViewData["CurrentOrder"]"
-           asp-route-actionType="@ViewData["currentActionType"]"
+           asp-route-sortOrder="@ViewData["SortOrder"]"
            class="btn btn-outline-primary mx-1">1</a>
         @if (startPage > 2)
         {
@@ -40,8 +38,7 @@
         <a asp-action="Index"
            asp-route-numpag="@i"
            asp-route-searchName="@ViewData["CurrentFilter"]"
-           asp-route-orderFilter="@ViewData["CurrentOrder"]"
-           asp-route-actionType="@ViewData["currentActionType"]"
+           asp-route-sortOrder="@ViewData["SortOrder"]"
            class="btn btn-outline-primary mx-1 @activePage">@i</a>
     }
 
@@ -54,8 +51,7 @@
         <a asp-action="Index"
            asp-route-numpag="@totalPages"
            asp-route-searchName="@ViewData["CurrentFilter"]"
-           asp-route-orderFilter="@ViewData["CurrentOrder"]"
-           asp-route-actionType="@ViewData["currentActionType"]"
+           asp-route-sortOrder="@ViewData["SortOrder"]"
            class="btn btn-outline-primary mx-1">@totalPages</a>
     }
 
@@ -63,8 +59,7 @@
     <a asp-action="Index"
        asp-route-numpag="@(Model.InitialPage + 1)"
        asp-route-searchName="@ViewData["CurrentFilter"]"
-       asp-route-orderFilter="@ViewData["CurrentOrder"]"
-       asp-route-actionType="@ViewData["currentActionType"]"
+       asp-route-sortOrder="@ViewData["SortOrder"]"
        class="btn btn-primary @(Model.InitialPage >= Model.TotalPages ? "disabled" : "")">
         Next
     </a>

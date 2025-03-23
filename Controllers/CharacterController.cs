@@ -20,9 +20,8 @@ namespace ChatAISystem.Controllers
         }
 
         // GET: Character
-        // GET: Character
-
-        public async Task<IActionResult> Index(string searchName, string currentFilter, int? numpag)
+        [HttpGet]
+        public async Task<IActionResult> Index(string searchName, string sortOrder, string currentFilter, int? numpag)
         {
             // Si se envía un nuevo término de búsqueda, reinicia la paginación
             if (searchName != null)
@@ -38,7 +37,7 @@ namespace ChatAISystem.Controllers
 
             // Guardar el filtro actual para mantenerlo en la vista
             ViewData["CurrentFilter"] = searchName;
-
+            ViewData["SortOrder"] = sortOrder;
             var characterQuery = _context.Characters
                 .Include(c => c.CreatedByNavigation)
                 .AsQueryable();
@@ -48,6 +47,20 @@ namespace ChatAISystem.Controllers
             {
                 characterQuery = characterQuery.Where(c => c.Name.Contains(searchName));
             }
+            // Ordenar por fecha según la opción seleccionada
+            switch (sortOrder)
+            {
+                case "asc":
+                    characterQuery = characterQuery.OrderBy(c => c.CreatedAt); // Asegúrate de tener el campo CreatedAt en el modelo
+                    break;
+                case "desc":
+                    characterQuery = characterQuery.OrderByDescending(c => c.CreatedAt);
+                    break;
+                default:
+                    characterQuery = characterQuery.OrderBy(c => c.Name); // Ordenar por defecto
+                    break;
+            }
+
             // Definir el tamaño de la página (5 registros por página)
             int regQuantity = 4;
 

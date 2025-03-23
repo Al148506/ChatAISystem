@@ -25,6 +25,16 @@
                         <input type="text" name="searchName" value="@ViewData["CurrentFilter"]" class="form-control" laceholder="Search by character name...">
                     </div>
                 </div>
+                <!-- Ordenar por fecha -->
+                <div class="me-2">
+                    <div class="form-group">
+                        <select name="sortOrder" class="form-control">
+                            <option value="">Sort by date</option>
+                            <option value="asc" selected="@(ViewData["SortOrder"]?.ToString() == "asc")">Oldest First</option>
+                            <option value="desc" selected="@(ViewData["SortOrder"]?.ToString() == "desc")">Newest First</option>
+                        </select>
+                    </div>
+                </div>
                 <!-- Botones -->
                 <div class="me-2">
                     <div class="form-group">
