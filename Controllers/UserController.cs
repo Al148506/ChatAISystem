@@ -3,6 +3,7 @@ using ChatAISystem.Models;
 using ChatAISystem.Models.ViewModels;
 using ChatAISystem.Permissions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatAISystem.Controllers
@@ -16,9 +17,10 @@ namespace ChatAISystem.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index(string searchName, string currentFilter, int? numpag)
+        public async Task<IActionResult> Index(string searchName, string sortOrder, string alpOrder, string currentFilter, string role, int? numpag)
         {
-            if (searchName != null)
+            // Si se aplica una nueva búsqueda, reiniciar la paginación
+            if (!string.IsNullOrEmpty(searchName))
             {
                 numpag = 1;
                 currentFilter = searchName;
@@ -28,20 +30,53 @@ namespace ChatAISystem.Controllers
                 searchName = currentFilter;
             }
 
+            // Guardar los valores en ViewData para mantener filtros en la paginación
             ViewData["CurrentFilter"] = searchName;
+            ViewData["SortOrder"] = sortOrder;
+            ViewData["CurrentRole"] = role ?? ""; // Asegurar que no sea null
+            ViewData["AlpOrder"] = alpOrder;
+            ViewData["Roles"] = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "", Text = "All Roles" },
+                new SelectListItem { Value = "Admin", Text = "Admin" },
+                new SelectListItem { Value = "User", Text = "User" }
+            };
 
-            var userQuery = _context.Users
-                .AsQueryable();
+            // Crear la consulta base
+            var userQuery = _context.Users.AsQueryable();
 
+            // Aplicar filtros si existen
             if (!string.IsNullOrEmpty(searchName))
             {
-                userQuery = userQuery.Where(u => u.Username.Contains(searchName));
+                userQuery = userQuery.Where(u =>
+                    ChatAIDBContext.GetSoundsLike(u.Email) == ChatAIDBContext.GetSoundsLike(searchName));
             }
 
+            if (!string.IsNullOrEmpty(role))
+            {
+                userQuery = userQuery.Where(u => u.Role == role);
+            }
+            // Ordenar por fecha según la opción seleccionada
+            userQuery = sortOrder switch
+            {
+                "asc" => userQuery.OrderBy(c => c.CreatedAt),
+                "desc" => userQuery.OrderByDescending(c => c.CreatedAt),
+                _ => userQuery.OrderBy(c => c.CreatedAt),
+            };
+            // Ordenar por UserName según la opción seleccionada
+            userQuery = alpOrder switch
+            {
+                "asc" => userQuery.OrderBy(c => c.Username),
+                "desc" => userQuery.OrderByDescending(c => c.Username),
+                _ => userQuery.OrderBy(c => c.Username),
+            };
             int regQuantity = 4;
 
+            // Retornar la vista con la paginación aplicada
             return View(await Pagination<User>.CreatePagination(userQuery.AsNoTracking(), numpag ?? 1, regQuantity));
         }
+
+
 
         [HttpGet]
         public IActionResult Create()

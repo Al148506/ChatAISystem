@@ -14,13 +14,54 @@
             </div>
         </div>
     </div>
-    <form asp-action="Index" method="get">
-        <div class="search-filter">
+    <div class="search-filter">
+        <form asp-action="Index" method="get">
             <div class="d-flex align-items-end flex-wrap mb-0">
                 <!-- Campo de búsqueda por nombre -->
                 <div class="me-2">
                     <div class="form-group">
-                        <input type="text" name="searchName" value="@ViewData["CurrentFilter"]" class="form-control" laceholder="Search by character name...">
+                        <input type="text" name="searchName" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Search by Email...">
+                    </div>
+                </div>
+                <!-- Campo de búsqueda por rol -->
+                <div class="me-2">
+                    <div class="form-group">
+                        <select name="role" class="form-control">
+                            @if (ViewData["Roles"] != null)
+                            {
+                                foreach (var role in (List<SelectListItem>)ViewData["Roles"])
+                                {
+                                    if (ViewData["CurrentRole"]?.ToString() == role.Value)
+                                    {
+                                        <option value="@role.Value" selected>@role.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@role.Value">@role.Text</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <!-- Ordenar por fecha -->
+                <div class="me-2">
+                    <div class="form-group">
+                        <select name="sortOrder" class="form-control">
+                            <option value="">Sort by date</option>
+                            <option value="asc" selected="@(ViewData["SortOrder"]?.ToString() == "asc")">Oldest First</option>
+                            <option value="desc" selected="@(ViewData["SortOrder"]?.ToString() == "desc")">Newest First</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Ordenar por username -->
+                <div class="me-2">
+                    <div class="form-group">
+                         <select name="alpOrder" class="form-control">
+                            <option value="">Sort by username</option>
+                            <option value="asc" selected="@(ViewData["AlpOrder"]?.ToString() == "asc")">A-Z</option>
+                            <option value="desc" selected="@(ViewData["AlpOrder"]?.ToString() == "desc")">Z-A</option>
+                        </select>
                     </div>
                 </div>
                 <!-- Botones -->
@@ -37,68 +78,64 @@
                     </div>
                 </div>
             </div>
-    </form>
-    <!-- Formulario oculto para el Token CSRF -->
-    <form id="deleteForm">
-        @Html.AntiForgeryToken()
-    </form>
-    <!-- Tabla de Usuarios -->
-    <div class="table-responsive">
-        <table class="table-custom">
-            <thead>
-                <tr>
-                    <th>
-                        @Html.DisplayNameFor(model => model[0].Username)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model[0].Email)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model[0].Role)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model[0].CreatedAt)
-                    </th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Select((value, index) => new { value, index }))
-                {
-                    <tr style="--row-index: @item.index">
-                        <td>
-                            @Html.DisplayFor(modelItem => item.value.Username)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.value.Email)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.value.Role)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.value.CreatedAt)
-                        </td>
-                        <td class="action-buttons">
-                            <a asp-action="Edit" asp-route-id="@item.value.Id" class="btn btn-edit">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
-
-                            <button type="button" class="btn btn-details">
-                                <i class="fas fa-info-circle"></i> Details
-                            </button>
-
-                            <button type="button" class="btn btn-delete" onclick="confirmDelete(@item.value.Id)">
-                                <i class="fas fa-trash-alt"></i> Delete
-                            </button>
-                        </td>
+</form>
+        <!-- Formulario oculto para el Token CSRF -->
+        <form id="deleteForm">
+            @Html.AntiForgeryToken()
+        </form>
+        <!-- Tabla de Usuarios -->
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model[0].Username)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model[0].Email)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model[0].Role)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model[0].CreatedAt)
+                        </th>
+                        <th>Actions</th>
                     </tr>
-                }
-            </tbody>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Select((value, index) => new { value, index }))
+                    {
+                        <tr style="--row-index: @item.index">
+                            <td>
+                                @Html.DisplayFor(modelItem => item.value.Username)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.value.Email)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.value.Role)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.value.CreatedAt)
+                            </td>
+                            <td class="action-buttons">
+                                <a asp-action="Edit" asp-route-id="@item.value.Id" class="btn btn-edit">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
 
-        </table>
+                                <button type="button" class="btn btn-delete" onclick="confirmDelete(@item.value.Id)">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination -->
+        @await Html.PartialAsync("_Pagination", Model)
     </div>
-    <!-- Pagination -->
-    @await Html.PartialAsync("_Pagination", Model)
 </div>
 <script>
     function confirmDelete(userId) {

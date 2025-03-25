@@ -1,30 +1,36 @@
 ﻿@model ChatAISystem.Helper.IPagination
 
+@{
+    var routeValues = new Dictionary<string, string?>
+{
+        { "searchName", ViewData["CurrentFilter"]?.ToString() ?? "" },
+        { "sortOrder", ViewData["SortOrder"]?.ToString() ?? "" },
+        { "Role", ViewData["CurrentRole"]?.ToString() ?? "" },
+        { "alpOrder", ViewData["AlpOrder"]?.ToString() ?? "" }
+    };
+
+    int totalPages = Model.TotalPages;
+    int currentPage = Model.InitialPage;
+    int maxPageButtons = 4;
+    int startPage = Math.Max(1, currentPage - maxPageButtons / 2);
+    int endPage = Math.Min(totalPages, startPage + maxPageButtons - 1);
+    startPage = Math.Max(1, endPage - maxPageButtons + 1);
+}
+
 <div class="d-flex justify-content-center my-3">
     <!-- Botón Anterior -->
     <a asp-action="Index"
-       asp-route-numpag="@(Model.InitialPage - 1)"
-       asp-route-searchName="@ViewData["CurrentFilter"]"
-       asp-route-sortOrder="@ViewData["SortOrder"]"
-       class="btn btn-primary @(Model.InitialPage <= 1 ? "disabled" : "")">
+       asp-all-route-data="routeValues"
+       asp-route-numpag="@(currentPage - 1)"
+       class="btn btn-primary @(currentPage <= 1 ? "disabled" : "")">
         Back
     </a>
-
-    @{
-        int totalPages = Model.TotalPages;
-        int currentPage = Model.InitialPage;
-        int maxPageButtons = 4;
-        int startPage = Math.Max(1, currentPage - maxPageButtons / 2);
-        int endPage = Math.Min(totalPages, startPage + maxPageButtons - 1);
-        startPage = Math.Max(1, endPage - maxPageButtons + 1);
-    }
 
     @if (startPage > 1)
     {
         <a asp-action="Index"
+           asp-all-route-data="routeValues"
            asp-route-numpag="1"
-           asp-route-searchName="@ViewData["CurrentFilter"]"
-           asp-route-sortOrder="@ViewData["SortOrder"]"
            class="btn btn-outline-primary mx-1">1</a>
         @if (startPage > 2)
         {
@@ -34,12 +40,10 @@
 
     @for (var i = startPage; i <= endPage; i++)
     {
-        var activePage = (i == currentPage) ? "active" : "";
         <a asp-action="Index"
+           asp-all-route-data="routeValues"
            asp-route-numpag="@i"
-           asp-route-searchName="@ViewData["CurrentFilter"]"
-           asp-route-sortOrder="@ViewData["SortOrder"]"
-           class="btn btn-outline-primary mx-1 @activePage">@i</a>
+           class="btn btn-outline-primary mx-1 @(i == currentPage ? "active" : "")">@i</a>
     }
 
     @if (endPage < totalPages)
@@ -49,18 +53,16 @@
             <span class="mx-1">...</span>
         }
         <a asp-action="Index"
+           asp-all-route-data="routeValues"
            asp-route-numpag="@totalPages"
-           asp-route-searchName="@ViewData["CurrentFilter"]"
-           asp-route-sortOrder="@ViewData["SortOrder"]"
            class="btn btn-outline-primary mx-1">@totalPages</a>
     }
 
     <!-- Botón Siguiente -->
     <a asp-action="Index"
-       asp-route-numpag="@(Model.InitialPage + 1)"
-       asp-route-searchName="@ViewData["CurrentFilter"]"
-       asp-route-sortOrder="@ViewData["SortOrder"]"
-       class="btn btn-primary @(Model.InitialPage >= Model.TotalPages ? "disabled" : "")">
+       asp-all-route-data="routeValues"
+       asp-route-numpag="@(currentPage + 1)"
+       class="btn btn-primary @(currentPage >= totalPages ? "disabled" : "")">
         Next
     </a>
 </div>

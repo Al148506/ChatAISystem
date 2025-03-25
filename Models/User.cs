@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace ChatAISystem.Models;
 
@@ -12,7 +13,7 @@ public partial class User
     public string Email { get; set; } = null!;
 
     public string PasswordHash { get; set; } = null!;
-
+    [Display(Name = "Creation Date")]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     public string Role { get; set; } = "User";

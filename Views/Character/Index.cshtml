@@ -35,6 +35,16 @@
                         </select>
                     </div>
                 </div>
+                <!-- Ordenar por character name -->
+                <div class="me-2">
+                    <div class="form-group">
+                        <select name="alpOrder" class="form-control">
+                            <option value="">Sort by username</option>
+                            <option value="asc" selected="@(ViewData["AlpOrder"]?.ToString() == "asc")">A-Z</option>
+                            <option value="desc" selected="@(ViewData["AlpOrder"]?.ToString() == "desc")">Z-A</option>
+                        </select>
+                    </div>
+                </div>
                 <!-- Botones -->
                 <div class="me-2">
                     <div class="form-group">
