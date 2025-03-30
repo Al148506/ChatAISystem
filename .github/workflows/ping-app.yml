@@ -1,0 +1,13 @@
+name: Keep App Alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'  # Ejecuta cada 10 minutos
+  workflow_dispatch:  # Add this line to enable manual triggering
+
+jobs:
+  ping-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send request to keep app alive
+        run: curl -X GET "https://chatiasystemacg.azurewebsites.net/"
