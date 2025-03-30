@@ -2,17 +2,27 @@ name: Keep Azure SQL Alive
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Ejecuta cada 10 minutos
+    - cron: '*/10 * * * *'  # Cada 10 minutos
   workflow_dispatch:
 
 jobs:
   keep-db-alive:
-    runs-on: ubuntu-22.04  # 🔹 Usa Ubuntu 22.04 en lugar de la última versión
+    runs-on: ubuntu-22.04
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Use mssql-tools
+    - name: Install ODBC Driver for SQL Server
       run: |
-        /opt/mssql-tools/bin/sqlcmd -S tcp:inventorysystemacg.database.windows.net,1433 -U ${{ secrets.DB_USER }} -P ${{ secrets.DB_PASSWORD }} -d CharAIDB -Q "SELECT 1"
+        sudo su
+        curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
+        curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | tee /etc/apt/sources.list.d/mssql-release.list
+        apt-get update
+        ACCEPT_EULA=Y apt-get install -y msodbcsql17 unixodbc-dev
+        exit
+
+    - name: Run SQL Query
+      run: |
+        /opt/mssql-tools/bin/sqlcmd -S tcp:inventorysystemacg.database.windows.net,1433 -U ${{ secrets.DB_USER }} -P ${{ secrets.DB_PASSWORD }} -d CharAIDB -l 60 -Q "SELECT 1"
+
