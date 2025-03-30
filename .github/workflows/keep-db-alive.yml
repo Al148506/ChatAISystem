@@ -2,7 +2,7 @@ name: Keep Azure SQL Alive
 
 on:
   schedule:
-    - cron: '*/10 * * * *'  # Cada 10 minutos
+    - cron: '*/10 * * * *'  # Every 10 minutes
   workflow_dispatch:
 
 jobs:
@@ -15,12 +15,12 @@ jobs:
 
     - name: Install ODBC Driver for SQL Server
       run: |
-        sudo su
+        sudo -s -- <<EOF
         curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
         curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | tee /etc/apt/sources.list.d/mssql-release.list
         apt-get update
         ACCEPT_EULA=Y apt-get install -y msodbcsql17 unixodbc-dev
-        exit
+        EOF
 
     - name: Run SQL Query
       run: |
