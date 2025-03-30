@@ -1,0 +1,167 @@
+﻿@model ChatAISystem.Helper.Pagination<User>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="~/css/CustomIndex.css" />
+<link rel="stylesheet" href="~/css/Modal.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Users</h1>
+        <div class="ms-auto">
+            <div class="form-group">
+                <a asp-controller="User" asp-action="Create" class="btn btn-success">
+                    <i class="fas fa-plus-circle me-2"></i> New User
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="search-filter">
+        <form asp-action="Index" method="get">
+            <div class="d-flex align-items-end flex-wrap mb-0">
+                <!-- Campo de búsqueda por nombre -->
+                <div class="me-2">
+                    <div class="form-group">
+                        <input type="text" name="searchName" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="Search by Email...">
+                    </div>
+                </div>
+                <!-- Campo de búsqueda por rol -->
+                <div class="me-2">
+                    <div class="form-group">
+                        <select name="role" class="form-control">
+                            @if (ViewData["Roles"] != null)
+                            {
+                                foreach (var role in (List<SelectListItem>)ViewData["Roles"])
+                                {
+                                    if (ViewData["CurrentRole"]?.ToString() == role.Value)
+                                    {
+                                        <option value="@role.Value" selected>@role.Text</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@role.Value">@role.Text</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <!-- Ordenar por fecha -->
+                <div class="me-2">
+                    <div class="form-group">
+                        <select name="sortOrder" class="form-control">
+                            <option value="">Sort by date</option>
+                            <option value="asc" selected="@(ViewData["SortOrder"]?.ToString() == "asc")">Oldest First</option>
+                            <option value="desc" selected="@(ViewData["SortOrder"]?.ToString() == "desc")">Newest First</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Ordenar por username -->
+                <div class="me-2">
+                    <div class="form-group">
+                         <select name="alpOrder" class="form-control">
+                            <option value="">Sort by username</option>
+                            <option value="asc" selected="@(ViewData["AlpOrder"]?.ToString() == "asc")">A-Z</option>
+                            <option value="desc" selected="@(ViewData["AlpOrder"]?.ToString() == "desc")">Z-A</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Botones -->
+                <div class="me-2">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
+                <div class="me-2">
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <a asp-action="Index" class="btn btn-primary form-control">Clear Filters</a>
+                    </div>
+                </div>
+            </div>
+</form>
+        <!-- Formulario oculto para el Token CSRF -->
+        <form id="deleteForm">
+            @Html.AntiForgeryToken()
+        </form>
+        <!-- Tabla de Usuarios -->
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>
+                            @Html.DisplayNameFor(model => model[0].Username)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model[0].Email)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model[0].Role)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => model[0].CreatedAt)
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Select((value, index) => new { value, index }))
+                    {
+                        <tr style="--row-index: @item.index">
+                            <td>
+                                @Html.DisplayFor(modelItem => item.value.Username)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.value.Email)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.value.Role)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.value.CreatedAt)
+                            </td>
+                            <td class="action-buttons">
+                                <a asp-action="Edit" asp-route-id="@item.value.Id" class="btn btn-edit">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+
+                                <button type="button" class="btn btn-delete" onclick="confirmDelete(@item.value.Id)">
+                                    <i class="fas fa-trash-alt"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <!-- Pagination -->
+        @await Html.PartialAsync("_Pagination", Model)
+    </div>
+</div>
+
+<script>
+    function confirmDelete(userId) {
+        if (confirm("¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.")) {
+            let token = document.querySelector("#deleteForm input[name='__RequestVerificationToken']").value;
+
+            fetch('/User/Delete/' + userId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                }
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload(); // Recargar la página después de eliminar
+                    } else {
+                        alert("Error al eliminar el usuario.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+    }
+
+</script>
+<script src="~/js/Filter.js"></script>
+
+

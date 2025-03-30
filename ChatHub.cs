@@ -7,17 +7,20 @@ using ChatAISystem.Models;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ChatAISystem.Models;
+using Microsoft.AspNetCore.Http;
 
 public class ChatHub : Hub
 {
     private readonly ChatAIDBContext _dbContext;
     private readonly string _apiKey;
     private const int MaxMessagesPerCharacter = 1000; // Límite de mensajes por personaje
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ChatHub(ChatAIDBContext context, IConfiguration configuration)
+    public ChatHub(ChatAIDBContext context, IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
     {
         _dbContext = context;
         _apiKey = configuration["ApiKeys:Gemini"] ?? throw new ArgumentNullException(nameof(configuration), "ApiKey no puede ser nulo");
+        _httpContextAccessor = httpContextAccessor;
     }
     //Carga mensajes paginados para el historial de chat.
 
@@ -68,10 +71,8 @@ public class ChatHub : Hub
             await Clients.Caller.SendAsync("ReceiveMessage", "System", "Error: Usuario no encontrado.");
             return;
         }
-
-
         // Obtener el HttpContext para acceder a la sesión desde el hub
-        var httpContext = Context.GetHttpContext();
+        var httpContext = _httpContextAccessor.HttpContext;
         int? lastCharacterId = httpContext?.Session.GetInt32("LastCharacterId");
         string? characterName = _dbContext.Characters.Find(characterId)?.Name;
 

@@ -1,0 +1,36 @@
+﻿@model ChatAISystem.Models.ViewModels.AdminEditViewModel
+<link href="~/css/Form.css" rel="stylesheet" />
+<div class="form-container">
+    <h1 class="form-title">Edit User</h1>
+    <form asp-action="Edit" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="Email" class="control-label">Email</label>
+            <input asp-for="Email" class="form-control" required />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Username" class="control-label">Username</label>
+            <input asp-for="Username" class="form-control" required />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Password" class="control-label">Password</label>
+            <input type="password" asp-for="Password" class="form-control" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Role" class="control-label">Role</label>
+            <select asp-for="Role" class="form-control">
+                <option value="User">User</option>
+                <option value="Admin">Admin</option>
+            </select>
+            <span asp-validation-for="Role" class="text-danger"></span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between">
+            <button type="submit" class="btn btn-primary mt-3">Edit</button>
+            <a asp-action="Index" asp-controller="User" class="btn btn-secondary mt-2">Cancel</a>
+        </div>
+    </form>
+</div>
+

@@ -1,9 +1,22 @@
 ﻿// Conexión con SignalR
 const connection = new signalR.HubConnectionBuilder()
-    .withUrl("/chatHub")
+    .withUrl("/chatHub", {
+        accessTokenFactory: async () => {
+            const response = await fetch('/api/negotiate');
+            const data = await response.json();
+
+            console.log("Token recibido:", data.accessToken); // ✅ Depuración extra
+            return data.accessToken || '';
+        }
+    })
+    .withAutomaticReconnect()
     .build();
 
-connection.start().catch(err => console.error(err.toString()));
+
+connection.start().then(() => {
+    console.log("✅ Conectado a SignalR");
+}).catch(err => console.error("❌ Error al conectar con SignalR:", err.toString()));
+
 
 let userId = parseInt(document.getElementById("userId").value); // ID del usuario
 let characterId = null; // ID del personaje seleccionado

@@ -2,29 +2,36 @@
 
 namespace ChatAISystem.Helper
 {
-    public class Pagination
+    public class Pagination<T> : List<T>, IPagination
     {
-        public class PaginatedList<T> : List<T>
+        public int InitialPage { get; private set; }
+        public int TotalPages { get; private set; }
+
+        public Pagination(List<T> items, int counter, int initialPage, int regQuantity)
         {
-            public int PageIndex { get; private set; }
-            public int TotalPages { get; private set; }
+            InitialPage = initialPage;
+            TotalPages = (int)Math.Ceiling(counter / (double)regQuantity);
+            this.AddRange(items);
+        }
 
-            public PaginatedList(List<T> items, int count, int pageIndex, int pageSize)
-            {
-                PageIndex = pageIndex;
-                TotalPages = (int)Math.Ceiling(count / (double)pageSize);
-                this.AddRange(items);
-            }
+        public bool PreviousPages => InitialPage > 1;
+        public bool LaterPages => InitialPage < TotalPages;
 
-            public bool HasPreviousPage => PageIndex > 1;
-            public bool HasNextPage => PageIndex < TotalPages;
+        public static async Task<Pagination<T>> CreatePagination(IQueryable<T> source, int initialPage, int regQuantity)
+        {
+            // Manejo seguro de valores nulos en la consulta
+            var safeSource = source.Select(item => item == null ? (T)(object)new { } : item); // Crear una proyección segura si es necesario
 
-            public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize)
-            {
-                var count = await source.CountAsync();
-                var items = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
-                return new PaginatedList<T>(items, count, pageIndex, pageSize);
-            }
+            var counter = await safeSource.CountAsync(); // Contar los elementos en la fuente
+
+            // Aplicar paginación y manejar valores nulos al materializar la consulta
+            var items = await safeSource
+                .Skip((initialPage - 1) * regQuantity)
+                .Take(regQuantity)
+                .ToListAsync();
+
+            // Retornar la instancia de la clase Pagination
+            return new Pagination<T>(items, counter, initialPage, regQuantity);
         }
     }
 }

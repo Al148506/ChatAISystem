@@ -5,17 +5,21 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 using ChatAISystem.Helper;
+using Microsoft.Extensions.Configuration;
+using ChatAISystem.Services.Interfaces;
 namespace ChatAISystem.Controllers
 {
     public class RegisterController : Controller
     {
+        private readonly IUserValidationService _userValidationService;
         private readonly ChatAIDBContext _context;
         private readonly IConfiguration _configuration;
 
-        public RegisterController(ChatAIDBContext context, IConfiguration configuration)
+        public RegisterController(ChatAIDBContext context, IConfiguration configuration, IUserValidationService userValidationService)
         {
             _context = context;
             _configuration = configuration;
+            _userValidationService = userValidationService;
         }
         public IActionResult Index()
         {
@@ -25,20 +29,14 @@ namespace ChatAISystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(RegisterViewModel model)
         {
-            var validationResponse = ValidateRegistration(model);
-            if (!validationResponse.success)
+            var validationResponse = _userValidationService.ValidateRegistrationAsync(model, Request.Form);
+            if (!validationResponse.Result.success)
             {
-                return Json(validationResponse);
+                return Json(new { success = false, message = validationResponse.Result.message});
             }
 
             try
             {
-                var captchaResponse = Request.Form["g-recaptcha-response"];
-                var utilities = new Utilities();
-                if (string.IsNullOrEmpty(captchaResponse) || !await utilities.ValidateCaptcha(captchaResponse, _configuration))
-                {
-                    return Json(new { success = false, message = "Por favor, resuelva el reCAPTCHA para continuar." });
-                }
                 var user = new User
                 {
                     Username = model.Username,
@@ -49,32 +47,21 @@ namespace ChatAISystem.Controllers
                 _context.Add(user);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = "Registro exitoso", redirectUrl = Url.Action("Index","Login") });
+                return Json(new { success = true, message = "Registro exitoso", redirectUrl = Url.Action("Index", "Login") });
+            }
+            catch (DbUpdateException dbEx) // 🔥 Capturar errores de base de datos
+            {
+                Console.WriteLine($"Error en la base de datos: {dbEx.Message}");
+                return Json(new { success = false, message = "El correo o usuario ya están en uso." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"Error al registrar usuario, intente con otro correo" });
+                Console.WriteLine($"Error inesperado: {ex.Message}");
+                return Json(new { success = false, message = "Ocurrió un error inesperado. Inténtelo más tarde." });
             }
-        }
-
-        // ✅ Método de validación reutilizable
-        private (bool success, string message) ValidateRegistration(RegisterViewModel model)
-        {
-       
-            if (string.IsNullOrWhiteSpace(model.Email) || !Utilities.IsValidEmail(model.Email))
-                return (false, "Por favor, ingrese un correo electrónico válido.");
-
-            if (string.IsNullOrWhiteSpace(model.Username))
-                return (false, "Por favor, ingrese un nombre de usuario.");
-
-            if (string.IsNullOrWhiteSpace(model.Password) || model.Password.Length < 6)
-                return (false, "La contraseña debe tener al menos 6 caracteres.");
-
-            if (model.Password != model.ConfirmPassword)
-                return (false, "Las contraseñas no coinciden.");
-
-            return (true, "Validación exitosa");
         }
 
     }
 }
+
+

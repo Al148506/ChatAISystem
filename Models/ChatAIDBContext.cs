@@ -6,10 +6,6 @@ namespace ChatAISystem.Models;
 
 public partial class ChatAIDBContext : DbContext
 {
-    public ChatAIDBContext()
-    {
-    }
-
     public ChatAIDBContext(DbContextOptions<ChatAIDBContext> options)
         : base(options)
     {
@@ -20,7 +16,10 @@ public partial class ChatAIDBContext : DbContext
     public virtual DbSet<Conversation> Conversations { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
-    
+
+    [DbFunction(Name = "SOUNDEX", IsBuiltIn = true)]
+    public static string GetSoundsLike(string query) => throw new NotImplementedException();
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
