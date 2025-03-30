@@ -53,12 +53,15 @@ namespace ChatAISystem.Controllers
                 _ => characterQuery.OrderBy(c => c.CreatedAt),
             };
 
-            characterQuery = alpOrder switch
+            if (!string.IsNullOrEmpty(alpOrder))
             {
-                "asc" => characterQuery.OrderBy(c => c.Name),
-                "desc" => characterQuery.OrderByDescending(c => c.Name),
-                _ => characterQuery.OrderBy(c => c.Name),
-            };
+                characterQuery = alpOrder switch
+                {
+                    "asc" => characterQuery.OrderBy(c => c.Name),
+                    "desc" => characterQuery.OrderByDescending(c => c.Name),
+                    _ => characterQuery
+                };
+            }
 
             int regQuantity = 4;
 
@@ -81,7 +84,7 @@ namespace ChatAISystem.Controllers
                 {
                     if (ModelState[key]?.Errors != null)
                     {
-                        foreach (var error in ModelState[key].Errors)
+                        foreach (var error in ModelState[key].Errors!)
                         {
                             System.Diagnostics.Debug.WriteLine($"Error en {key}: {error.ErrorMessage}");
                         }
@@ -98,8 +101,8 @@ namespace ChatAISystem.Controllers
             }
 
             character.Name = Utilities.CleanField(character.Name);
-            character.Description = Utilities.CleanField(character.Description);
-            character.AvatarUrl = Utilities.CleanField(character.AvatarUrl);
+            character.Description = Utilities.CleanField(character.Description ?? string.Empty);
+            character.AvatarUrl = Utilities.CleanField(character.AvatarUrl ?? string.Empty);
             character.AvatarUrl = Utilities.ValidateLinkImage(character.AvatarUrl) ? character.AvatarUrl : null;
             character.CreatedAt = DateTime.UtcNow;
             character.CreatedBy = userId.Value;
@@ -147,7 +150,7 @@ namespace ChatAISystem.Controllers
                 {
                     if (ModelState[key]?.Errors != null)
                     {
-                        foreach (var error in ModelState[key].Errors)
+                        foreach (var error in ModelState[key].Errors!)
                         {
                             System.Diagnostics.Debug.WriteLine($"Error en {key}: {error.ErrorMessage}");
                         }

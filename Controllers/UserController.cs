@@ -56,20 +56,25 @@ namespace ChatAISystem.Controllers
             {
                 userQuery = userQuery.Where(u => u.Role == role);
             }
-            // Ordenar por fecha según la opción seleccionada
+
+
             userQuery = sortOrder switch
             {
                 "asc" => userQuery.OrderBy(c => c.CreatedAt),
                 "desc" => userQuery.OrderByDescending(c => c.CreatedAt),
                 _ => userQuery.OrderBy(c => c.CreatedAt),
             };
-            // Ordenar por UserName según la opción seleccionada
-            userQuery = alpOrder switch
+
+            if (!string.IsNullOrEmpty(alpOrder))
             {
-                "asc" => userQuery.OrderBy(c => c.Username),
-                "desc" => userQuery.OrderByDescending(c => c.Username),
-                _ => userQuery.OrderBy(c => c.Username),
-            };
+                userQuery = alpOrder switch
+                {
+                    "asc" => userQuery.OrderBy(c => c.Username),
+                    "desc" => userQuery.OrderByDescending(c => c.Username),
+                    _ => userQuery
+                };
+            }
+
             int regQuantity = 4;
 
             // Retornar la vista con la paginación aplicada

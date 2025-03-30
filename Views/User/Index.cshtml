@@ -74,7 +74,7 @@
                 <div class="me-2">
                     <div class="form-group">
                         <label>&nbsp;</label>
-                        <a asp-action="Index" class="btn btn-primary form-control">Complete List</a>
+                        <a asp-action="Index" class="btn btn-primary form-control">Clear Filters</a>
                     </div>
                 </div>
             </div>
@@ -137,6 +137,7 @@
         @await Html.PartialAsync("_Pagination", Model)
     </div>
 </div>
+
 <script>
     function confirmDelete(userId) {
         if (confirm("¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.")) {
@@ -161,5 +162,6 @@
     }
 
 </script>
+<script src="~/js/Filter.js"></script>
 
 
