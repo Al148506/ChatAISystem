@@ -1,0 +1,18 @@
+name: Keep Azure SQL Alive
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'  # Ejecuta cada 10 minutos
+  workflow_dispatch:
+
+jobs:
+  keep-db-alive:
+    runs-on: ubuntu-22.04  # 🔹 Usa Ubuntu 22.04 en lugar de la última versión
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Use mssql-tools
+      run: |
+        /opt/mssql-tools/bin/sqlcmd -S tcp:inventorysystemacg.database.windows.net,1433 -U ${{ secrets.DB_USER }} -P ${{ secrets.DB_PASSWORD }} -d CharAIDB -Q "SELECT 1"
