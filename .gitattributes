@@ -61,3 +61,20 @@
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Manejo de line endings según plataforma
+* text=auto
+
+# Forzar CRLF para archivos de texto (Windows-friendly)
+*.cs text eol=crlf
+*.cshtml text eol=crlf
+*.js text eol=crlf
+*.css text eol=crlf
+*.html text eol=crlf
+*.ts text eol=crlf
+
+# Forzar LF para scripts (Linux/macOS-friendly)
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+

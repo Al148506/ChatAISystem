@@ -25,16 +25,23 @@ let loading = false; // Evita múltiples cargas al mismo tiempo
 
 // Función para seleccionar un personaje de la sidebar
 function selectCharacter(id, name) {
-    characterId = parseInt(id, 10); // Asignar el ID del personaje seleccionado
+    characterId = parseInt(id, 10);
     document.getElementById("characterId").value = id;
     document.getElementById("chatTitle").innerText = `Chat with ${name}`;
+
     let messageInput = document.getElementById("messageInput");
     messageInput.disabled = false;
-    messageInput.placeholder = `Write a massage for ${name}...`;
-    page = 1; // Reiniciar la página a 1
-    document.getElementById("chatBox").innerHTML = ""; // Limpiar el chatBox
-    loadChatHistory(); // Cargar los últimos 10 mensajes
+    messageInput.placeholder = `Write a message for ${name}...`;
+
+    document.getElementById("sendButton").disabled = false; // ✅ ACTIVA el botón
+
+    page = 1;
+    document.getElementById("chatBox").innerHTML = "";
+
+    loadChatHistory();           // ✅ Primero carga historial (si existe)
+    startChat(userId, characterId); // ✅ Luego llama a la IA si no hay historial
 }
+
 // Función para filtrar un personaje de la sidebar
 function filterCharacters() {
     const searchTerm = document.getElementById('characterSearch').value.toLowerCase();
@@ -125,6 +132,20 @@ function scrollToBottom() {
     const chatBox = document.getElementById("chatBox");
     chatBox.scrollTop = chatBox.scrollHeight;
 }
+function startChat(userId, characterId) {
+    fetch('/Chat/StartChatIfEmpty', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: userId, characterId: characterId })
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Intro result:", data);
+            // La IA responderá automáticamente vía SignalR (no necesitas hacer más aquí)
+        });
+}
 
 // Evento para cargar más mensajes al hacer scroll hacia arriba
 document.getElementById("chatBox").addEventListener("scroll", function () {
@@ -135,9 +156,14 @@ document.getElementById("chatBox").addEventListener("scroll", function () {
 
 // Evento para recibir mensajes nuevos
 connection.on("ReceiveMessage", (sender, message) => {
-    console.log(`Sender recibido: ${sender}`); // Verifica qué valor está recibiendo
-    addMessageToChat(sender === "IA" ? "ai" : "user", message);
+    console.log(`Sender recibido: ${sender}`);
+
+    const normalizedSender = sender.trim().toLowerCase();
+    const role = normalizedSender === "ai" || normalizedSender === "ia" ? "ai" : "user";
+
+    addMessageToChat(role, message);
 });
+
 
 // Evento para cargar el historial de mensajes
 connection.on("LoadChatHistory", (jsonMessages) => {

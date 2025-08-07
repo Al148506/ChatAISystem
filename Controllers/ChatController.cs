@@ -54,9 +54,9 @@ namespace ChatAISystem.Controllers
         [HttpPost]
         public async Task<IActionResult> SendMessage(int userId, int characterId, string message)
         {
-            var session = _httpContextAccessor.HttpContext.Session;
+            var session = _httpContextAccessor.HttpContext?.Session;
 
-            var sessionUserId = session.GetInt32("UserId"); // Obtén el ID de la sesión
+            var sessionUserId = session?.GetInt32("UserId"); // Obtén el ID de la sesión
 
             if (sessionUserId == null || sessionUserId != userId)
             {
@@ -72,7 +72,7 @@ namespace ChatAISystem.Controllers
         public IActionResult Negotiate()
         {
             var httpContext = _httpContextAccessor.HttpContext;
-            var  userId = httpContext?.Session.GetString("Username") ?? "anonymous";
+            var userId = httpContext?.Session.GetString("Username") ?? "anonymous";
             var url = $"{Request.Scheme}://{Request.Host}/chatHub";
 
             return Ok(new
@@ -81,5 +81,50 @@ namespace ChatAISystem.Controllers
                 accessToken = userId
             });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> StartChatIfEmpty([FromBody] ChatStartRequest request)
+        {
+            int userId = request.UserId;
+            int characterId = request.CharacterId;
+
+            var hasHistory = await _context.Conversations
+                .AnyAsync(c => c.UserId == userId && c.CharacterId == characterId);
+
+            if (hasHistory)
+            {
+                return Ok(new { message = "Chat already has history." });
+            }
+
+            // Get character for prompt
+            var hub = new ChatHub(_context, HttpContext.RequestServices.GetRequiredService<IConfiguration>(), _httpContextAccessor);
+            var aiIntro = await hub.GetAIResponse(userId, characterId);
+
+            var aiMessage = new Conversation
+            {
+                UserId = userId,
+                CharacterId = characterId,
+                Role = "ai",
+                MessageText = aiIntro,
+                Timestamp = DateTime.UtcNow
+            };
+
+            _context.Conversations.Add(aiMessage);
+            await _context.SaveChangesAsync();
+
+            // Send intro message via SignalR
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "AI", aiIntro);
+
+            return Ok(new { message = "Intro sent", content = aiIntro });
+        }
+
+        public class ChatStartRequest
+        {
+            public int UserId { get; set; }
+            public int CharacterId { get; set; }
+        }
+
+
+
     }
 }

@@ -1,5 +1,4 @@
 ﻿@model ChatAISystem.Models.ViewModels.ChatViewModel
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -27,30 +26,36 @@
                 }
             </div>
         </div>
-
         <!-- Área principal del chat -->
         <div class="chat-main">
             <!-- Barra superior -->
             <div class="chat-header">
                 <span id="chatTitle">Select a character</span>
             </div>
-
             <!-- Caja de mensajes -->
-            <div id="chatBox" class="chat-box"></div>
-
+            <div id="chatBox" class="chat-box">
+                <!-- Initial instructions -->
+                <div class="initial-instructions message sent">
+                    <h3>Welcome to AI Character Chat!</h3>
+                    <p>To get started:</p>
+                    <ol>
+                        <li>Select a character from the left sidebar</li>
+                        <li>The chat will activate once you've selected a character</li>
+                        <li>Type your message and press Enter or click Send</li>
+                    </ol>
+                    <p>You can search for characters using the search box above the character list.</p>
+                </div>
+            </div>
             <!-- Campos ocultos para el ID del usuario y personaje seleccionado -->
             <input type="hidden" id="userId" value="@Model.UserId" />
             <input type="hidden" id="characterId" value="" />
-
             <!-- Campo para escribir el mensaje -->
             <div class="input-container">
                 <input type="text" id="messageInput" placeholder="Select a character" onkeydown="handleKeyPress(event)" disabled>
-                <button onclick="sendMessage()">Send</button>
+                <button onclick="sendMessage()" disabled id="sendButton">Send</button>
             </div>
         </div>
     </div>
-
     <script src="~/js/Chat.js" defer></script>
-
 </body>
 </html>
