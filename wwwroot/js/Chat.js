@@ -76,6 +76,7 @@ function sendMessage() {
         .catch(err => console.error(err.toString()));
 
     document.getElementById("messageInput").value = "";
+
 }
 
 // Función para cargar el historial de mensajes
@@ -132,6 +133,18 @@ function scrollToBottom() {
     const chatBox = document.getElementById("chatBox");
     chatBox.scrollTop = chatBox.scrollHeight;
 }
+// Funciones para controlar las esperas de la IA
+function disableInput() {
+    document.getElementById("messageInput").disabled = true;
+    document.getElementById("sendButton").disabled = true;
+}
+
+function enableInput() {
+    document.getElementById("messageInput").disabled = false;
+    document.getElementById("sendButton").disabled = false;
+    document.getElementById("messageInput").focus();
+}
+
 function startChat(userId, characterId) {
     fetch('/Chat/StartChatIfEmpty', {
         method: 'POST',
@@ -164,24 +177,42 @@ connection.on("ReceiveMessage", (sender, message) => {
     addMessageToChat(role, message);
 });
 
+connection.on("AIWritingStarted", (characterName) => {
+    const indicator = document.getElementById("typingIndicator");
+    indicator.style.display = "block";
+    indicator.innerHTML = `<em>${characterName} está escribiendo, por favor espera...</em>`;
+
+    disableInput();
+});
+
+connection.on("AIWritingFinished", () => {
+    const indicator = document.getElementById("typingIndicator");
+    indicator.style.display = "none";
+
+    enableInput();
+});
+
+
 
 // Evento para cargar el historial de mensajes
-connection.on("LoadChatHistory", (jsonMessages) => {
+connection.on("LoadChatHistory", (messages) => {
     try {
-        const messages = JSON.parse(jsonMessages);
         console.log("Mensajes recibidos:", messages);
-        if (messages.length === 0) return;
+        if (!messages || messages.length === 0) return;
 
         messages.forEach(msg => {
-            // Usa msg.Role y msg.MessageText en lugar de msg.role y msg.messageText
-            addMessageToChat(msg.Role === "user" ? "user" : "ai", msg.MessageText, "prepend");
+            addMessageToChat(
+                msg.role === "user" ? "user" : "ai",
+                msg.messageText,
+                "prepend"
+            );
         });
 
         if (page === 1) {
             scrollToBottom();
         }
     } catch (err) {
-        console.error("Error al parsear JSON:", err);
+        console.error("Error procesando historial:", err);
     } finally {
         loading = false;
     }

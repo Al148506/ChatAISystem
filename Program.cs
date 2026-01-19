@@ -4,6 +4,7 @@ using ChatAISystem.Permissions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using ChatAISystem.Services.Interfaces;
+using ChatAISystem.Services.ConversationService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +50,11 @@ builder.Services.AddControllersWithViews(options =>
 
 // ✅ Inyectar el servicio para validar el usuario
 builder.Services.AddScoped<IUserValidationService, UserValidationService>();
+
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IAIService, OllamaAIService>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
+
 
 // Construir la app
 var app = builder.Build();

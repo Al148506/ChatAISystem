@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace ChatAISystem.Controllers
 {
@@ -12,12 +13,18 @@ namespace ChatAISystem.Controllers
         private readonly ChatAIDBContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IAIService _aiService;
+        private readonly IConfiguration _configuration;
 
-        public ChatController(ChatAIDBContext context, IHttpContextAccessor httpContextAccessor, IHubContext<ChatHub> hubContext)
+
+        public ChatController(ChatAIDBContext context, IHttpContextAccessor httpContextAccessor, IHubContext<ChatHub> hubContext,
+               IConfiguration configuration,IAIService aiService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _hubContext = hubContext;
+            _configuration = configuration;
+            _aiService = aiService;
         }
 
         public async Task<IActionResult> Index()
@@ -97,8 +104,8 @@ namespace ChatAISystem.Controllers
             }
 
             // Get character for prompt
-            var hub = new ChatHub(_context, HttpContext.RequestServices.GetRequiredService<IConfiguration>(), _httpContextAccessor);
-            var aiIntro = await hub.GetAIResponse(userId, characterId);
+            var aiIntro = await _aiService.GenerateResponseAsync(userId, characterId);
+
 
             var aiMessage = new Conversation
             {
@@ -112,8 +119,8 @@ namespace ChatAISystem.Controllers
             _context.Conversations.Add(aiMessage);
             await _context.SaveChangesAsync();
 
-            // Send intro message via SignalR
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "AI", aiIntro);
+            await _hubContext.Clients.User(userId.ToString())
+            .SendAsync("ReceiveMessage", "AI", aiIntro);
 
             return Ok(new { message = "Intro sent", content = aiIntro });
         }
