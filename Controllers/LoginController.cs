@@ -93,7 +93,6 @@ namespace ChatAISystem.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
                 return Json(new
                 {
                     success = false,
