@@ -26,115 +26,145 @@ public class OpenRouterAIService : IAIService
             ?? throw new ArgumentNullException("AI:OpenRouterApiKey not configured");
     }
 
+    private static readonly string[] ModelFallbackChain =
+{
+    "deepseek/deepseek-chat",
+    "mistralai/mistral-7b-instruct",
+    "meta-llama/llama-3-8b-instruct"
+};
+
+    private async Task<(bool success, string result)> TryGenerateWithModelAsync(
+    string model,
+    List<object> messages)
+    {
+        var payload = new
+        {
+            model,
+            messages,
+            temperature = 0.65,
+            top_p = 0.85,
+            max_tokens = 150
+        };
+
+        var payloadJson = JsonSerializer.Serialize(payload);
+
+        var request = new HttpRequestMessage(HttpMethod.Post, OpenRouterUrl)
+        {
+            Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
+        };
+
+        request.Headers.Authorization =
+            new AuthenticationHeaderValue("Bearer", _apiKey);
+
+        request.Headers.Add("HTTP-Referer", "https://localhost");
+        request.Headers.Add("X-Title", "ChatAISystem");
+
+        var response = await _httpClient.SendAsync(request);
+        var responseBody = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return (false, $"""
+        ❌ Model failed: {model}
+        Status: {(int)response.StatusCode}
+        Response:
+        {responseBody}
+        """);
+        }
+
+        using var doc = JsonDocument.Parse(responseBody);
+
+        var text = doc.RootElement
+            .GetProperty("choices")[0]
+            .GetProperty("message")
+            .GetProperty("content")
+            .GetString();
+
+        return (true, text ?? "...");
+    }
+
+    private async Task<List<object>> BuildMessagesAsync(
+    int userId,
+    int characterId)
+    {
+        var messages = new List<object>();
+
+        var character = await _dbContext.Characters
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == characterId);
+
+        if (!string.IsNullOrWhiteSpace(character?.Description))
+        {
+            messages.Add(new
+            {
+                role = "system",
+                content = $"""
+            You are roleplaying as this character:
+            {character.Description}
+
+            Rules:
+            - Stay in character
+            - Speak English
+            - Use *actions* naturally
+            - Never mention AI
+            """
+            });
+        }
+
+        var history = await _dbContext.Conversations
+            .AsNoTracking()
+            .Where(c => c.UserId == userId && c.CharacterId == characterId)
+            .OrderByDescending(c => c.Timestamp)
+            .Take(ContextMessageLimit)
+            .OrderBy(c => c.Timestamp)
+            .ToListAsync();
+
+        foreach (var msg in history)
+        {
+            messages.Add(new
+            {
+                role = Utilities.NormalizeRole(msg.Role),
+                content = msg.MessageText
+            });
+        }
+
+        return messages;
+    }
+
+
     public async Task<string> GenerateResponseAsync(int userId, int characterId)
     {
         try
         {
-            var messages = new List<object>();
+            var messages = await BuildMessagesAsync(userId, characterId);
 
-            var character = await _dbContext.Characters
-                .AsNoTracking()
-                .FirstOrDefaultAsync(c => c.Id == characterId);
+            var errors = new StringBuilder();
 
-            if (!string.IsNullOrWhiteSpace(character?.Description))
+            foreach (var model in ModelFallbackChain)
             {
-                messages.Add(new
-                {
-                    role = "system",
-                    content = $"""
-                    You are roleplaying as this character:
-                    {character.Description}
+                var (success, result) =
+                    await TryGenerateWithModelAsync(model, messages);
 
-                    Rules:
-                    - Stay in character
-                    - Speak English
-                    - Use *actions* naturally
-                    - Never mention AI
-                    """
-                });
+                if (success)
+                    return result;
+
+                errors.AppendLine(result);
             }
 
-            var history = await _dbContext.Conversations
-                .AsNoTracking()
-                .Where(c => c.UserId == userId && c.CharacterId == characterId)
-                .OrderByDescending(c => c.Timestamp)
-                .Take(ContextMessageLimit)
-                .OrderBy(c => c.Timestamp)
-                .ToListAsync();
+            return $"""
+        ⚠️ All models failed.
 
-            foreach (var msg in history)
-            {
-                if (string.IsNullOrWhiteSpace(msg.MessageText))
-                    continue;
-
-                messages.Add(new
-                {
-                    role = Utilities.NormalizeRole(msg.Role),
-                    content = msg.MessageText
-                });
-            }
-
-            var payload = new
-            {
-                model = DefaultModel,
-                messages,
-                temperature = 0.65,
-                top_p = 0.85,
-                max_tokens = 150
-            };
-
-            var payloadJson = JsonSerializer.Serialize(payload);
-
-            var request = new HttpRequestMessage(HttpMethod.Post, OpenRouterUrl)
-            {
-                Content = new StringContent(payloadJson, Encoding.UTF8, "application/json")
-            };
-
-            request.Headers.Authorization =
-                new AuthenticationHeaderValue("Bearer", _apiKey);
-
-            request.Headers.Add("HTTP-Referer", "https://localhost");
-            request.Headers.Add("X-Title", "ChatAISystem");
-
-            var response = await _httpClient.SendAsync(request);
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return $"""
-                ❌ OpenRouter API ERROR
-
-                StatusCode: {(int)response.StatusCode} ({response.StatusCode})
-
-                Response:
-                {responseBody}
-
-                Payload:
-                {payloadJson}
-                """;
-            }
-
-            using var doc = JsonDocument.Parse(responseBody);
-
-            return doc.RootElement
-                .GetProperty("choices")[0]
-                .GetProperty("message")
-                .GetProperty("content")
-                .GetString()
-                ?? "⚠️ Empty response from model";
+        {errors}
+        """;
         }
         catch (Exception ex)
         {
             return $"""
-            ❌ EXCEPTION THROWN
-
-            Type: {ex.GetType().Name}
-            Message: {ex.Message}
-
-            StackTrace:
-            {ex.StackTrace}
-            """;
+        ❌ Exception thrown
+        {ex.Message}
+        """;
         }
     }
+
+
 }

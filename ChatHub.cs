@@ -46,14 +46,19 @@ public class ChatHub : Hub
             pageSize
         );
 
+        var orderedMessages = messages
+        .OrderByDescending(m => m.Timestamp) 
+        .Select(m => new
+        {
+            m.Role,
+            m.MessageText,
+            Timestamp = m.Timestamp.ToUniversalTime().ToString("o")
+        })
+        .ToList();
+
         await Clients.Caller.SendAsync(
             "LoadChatHistory",
-            messages.Select(m => new
-            {
-                m.Role,
-                m.MessageText,
-                Timestamp = m.Timestamp.ToUniversalTime().ToString("o")
-            })
+            orderedMessages
         );
     }
 
