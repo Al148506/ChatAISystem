@@ -94,8 +94,6 @@ public class OllamaAIService : IAIService
         }
         catch (Exception ex)
         {
-            //Console.WriteLine("OLLAMA ERROR:");
-            //Console.WriteLine(ex.ToString());
             return "The character remains silent.";
         }
 

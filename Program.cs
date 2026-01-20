@@ -51,8 +51,8 @@ builder.Services.AddControllersWithViews(options =>
 // ✅ Inyectar el servicio para validar el usuario
 builder.Services.AddScoped<IUserValidationService, UserValidationService>();
 
-builder.Services.AddHttpClient();
-builder.Services.AddScoped<IAIService, OllamaAIService>();
+builder.Services.AddHttpClient<OpenRouterAIService>();
+builder.Services.AddScoped<IAIService, OpenRouterAIService>();
 builder.Services.AddScoped<IConversationService, ConversationService>();
 
 

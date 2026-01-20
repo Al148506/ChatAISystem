@@ -3,7 +3,7 @@
     public class APIMessage
     {
         // Clases para deserializar la respuesta de la API
-        public class Message
+        public class ChatMessage
         {
             public required string role { get; set; }
             public required string content { get; set; }

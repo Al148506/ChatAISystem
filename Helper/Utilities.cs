@@ -77,5 +77,17 @@ namespace ChatAISystem.Helper
             }
         }
 
+        public static string NormalizeRole(string role)
+        {
+            return role.ToLower() switch
+            {
+                "ai" => "assistant",
+                "assistant" => "assistant",
+                "user" => "user",
+                "system" => "system",
+                _ => "user" 
+            };
+        }
+
     }
 }
