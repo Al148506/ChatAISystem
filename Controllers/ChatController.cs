@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 
 namespace ChatAISystem.Controllers
 {
@@ -12,12 +13,18 @@ namespace ChatAISystem.Controllers
         private readonly ChatAIDBContext _context;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IHubContext<ChatHub> _hubContext;
+        private readonly IAIService _aiService;
+        private readonly IConfiguration _configuration;
 
-        public ChatController(ChatAIDBContext context, IHttpContextAccessor httpContextAccessor, IHubContext<ChatHub> hubContext)
+
+        public ChatController(ChatAIDBContext context, IHttpContextAccessor httpContextAccessor, IHubContext<ChatHub> hubContext,
+               IConfiguration configuration,IAIService aiService)
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
             _hubContext = hubContext;
+            _configuration = configuration;
+            _aiService = aiService;
         }
 
         public async Task<IActionResult> Index()
@@ -54,9 +61,9 @@ namespace ChatAISystem.Controllers
         [HttpPost]
         public async Task<IActionResult> SendMessage(int userId, int characterId, string message)
         {
-            var session = _httpContextAccessor.HttpContext.Session;
+            var session = _httpContextAccessor.HttpContext?.Session;
 
-            var sessionUserId = session.GetInt32("UserId"); // Obtén el ID de la sesión
+            var sessionUserId = session?.GetInt32("UserId"); // Obtén el ID de la sesión
 
             if (sessionUserId == null || sessionUserId != userId)
             {
@@ -72,7 +79,7 @@ namespace ChatAISystem.Controllers
         public IActionResult Negotiate()
         {
             var httpContext = _httpContextAccessor.HttpContext;
-            var  userId = httpContext?.Session.GetString("Username") ?? "anonymous";
+            var userId = httpContext?.Session.GetString("Username") ?? "anonymous";
             var url = $"{Request.Scheme}://{Request.Host}/chatHub";
 
             return Ok(new
@@ -81,5 +88,50 @@ namespace ChatAISystem.Controllers
                 accessToken = userId
             });
         }
+
+        [HttpPost]
+        public async Task<IActionResult> StartChatIfEmpty([FromBody] ChatStartRequest request)
+        {
+            int userId = request.UserId;
+            int characterId = request.CharacterId;
+
+            var hasHistory = await _context.Conversations
+                .AnyAsync(c => c.UserId == userId && c.CharacterId == characterId);
+
+            if (hasHistory)
+            {
+                return Ok(new { message = "Chat already has history." });
+            }
+
+            // Get character for prompt
+            var aiIntro = await _aiService.GenerateResponseAsync(userId, characterId);
+
+
+            var aiMessage = new Conversation
+            {
+                UserId = userId,
+                CharacterId = characterId,
+                Role = "ai",
+                MessageText = aiIntro,
+                Timestamp = DateTime.UtcNow
+            };
+
+            _context.Conversations.Add(aiMessage);
+            await _context.SaveChangesAsync();
+
+            await _hubContext.Clients.User(userId.ToString())
+            .SendAsync("ReceiveMessage", "AI", aiIntro);
+
+            return Ok(new { message = "Intro sent", content = aiIntro });
+        }
+
+        public class ChatStartRequest
+        {
+            public int UserId { get; set; }
+            public int CharacterId { get; set; }
+        }
+
+
+
     }
 }

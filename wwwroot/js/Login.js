@@ -1,11 +1,20 @@
 ﻿document.getElementById("loginForm").addEventListener("submit", async function (event) {
-    event.preventDefault(); // Evitar el envío tradicional del formulario
+    event.preventDefault();
+
+    const loadingOverlay = document.getElementById("loading");
+    const errorMessage = document.querySelector(".errorMessage");
+
+    // ✅ Validar captcha ANTES de enviar
+    const captchaResponse = grecaptcha.getResponse();
+    if (!captchaResponse) {
+        showError("Por favor, resuelva el reCAPTCHA para continuar.");
+        return;
+    }
+
+    hideError();
+    loadingOverlay.classList.remove("d-none");
 
     const formData = new FormData(this);
-    const loadingOverlay = document.getElementById("loading");
-
-    // Mostrar el loader
-    loadingOverlay.classList.remove("d-none");
 
     try {
         const response = await fetch('/Login/ValidateLogin', {
@@ -14,35 +23,41 @@
         });
 
         const contentType = response.headers.get("content-type");
-        if (response.ok) {
-            if (contentType && contentType.includes("application/json")) {
-                const result = await response.json();
-                if (result.success) {
-                    // Redirigir si el inicio de sesión es exitoso
-                    window.location.href = result.redirectUrl;
-                } else {
-                    // Mostrar mensaje de error
-                    const errorMessage = document.querySelector(".errorMessage");
-                    if (errorMessage) {
-                        errorMessage.textContent = result.message;
-                        errorMessage.classList.remove("d-none");
-                    }
-                    if (typeof grecaptcha !== "undefined") {
-                        grecaptcha.reset();
-                    }
-                }
+
+        if (!response.ok) {
+            throw new Error("Error en la solicitud");
+        }
+
+        if (contentType && contentType.includes("application/json")) {
+            const result = await response.json();
+
+            if (result.success) {
+                window.location.href = result.redirectUrl;
             } else {
-                console.error("La respuesta no es JSON:", await response.text());
+                showError(result.message);
+
+                // 🔁 Reset obligatorio
+                grecaptcha.reset();
             }
-        } else {
-            console.error("Error en la solicitud:", response.statusText);
         }
     } catch (error) {
-        console.error("Error de red:", error);
+        console.error("Error:", error);
+        showError("Error de red. Intente nuevamente.");
+        grecaptcha.reset();
     } finally {
-        // Ocultar el loader después de 1s
-        loadingOverlay.remove();
+        // ✅ OCULTAR, no eliminar
+        loadingOverlay.classList.add("d-none");
     }
 });
 
+function showError(message) {
+    const errorMessage = document.querySelector(".errorMessage");
+    errorMessage.textContent = message;
+    errorMessage.classList.remove("d-none");
+}
 
+function hideError() {
+    const errorMessage = document.querySelector(".errorMessage");
+    errorMessage.textContent = "";
+    errorMessage.classList.add("d-none");
+}
