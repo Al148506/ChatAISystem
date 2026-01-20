@@ -7,7 +7,7 @@
     // ✅ Validar captcha ANTES de enviar
     const captchaResponse = grecaptcha.getResponse();
     if (!captchaResponse) {
-        showError("Por favor, resuelva el reCAPTCHA para continuar.");
+        showError("Please, solve the reCAPTCHA to continue.");
         return;
     }
 
@@ -25,7 +25,7 @@
         const contentType = response.headers.get("content-type");
 
         if (!response.ok) {
-            throw new Error("Error en la solicitud");
+            throw new Error("Error in the request");
         }
 
         if (contentType && contentType.includes("application/json")) {
@@ -42,7 +42,7 @@
         }
     } catch (error) {
         console.error("Error:", error);
-        showError("Error de red. Intente nuevamente.");
+        showError("Network error, please try again");
         grecaptcha.reset();
     } finally {
         // ✅ OCULTAR, no eliminar

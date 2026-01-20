@@ -134,7 +134,7 @@ connection.on("ReceiveMessage", (sender, message) => {
 connection.on("AIWritingStarted", (characterName) => {
     const indicator = document.getElementById("typingIndicator");
     indicator.style.display = "block";
-    indicator.innerHTML = `<em>${characterName} está escribiendo, por favor espera...</em>`;
+    indicator.innerHTML = `<em>${characterName} is writing, please wait...</em>`;
     disableInput();
 });
 

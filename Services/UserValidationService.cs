@@ -3,7 +3,6 @@ using ChatAISystem.Models.ViewModels;
 using ChatAISystem.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using System;
 using System.Threading.Tasks;
 
 public class UserValidationService : IUserValidationService
@@ -17,46 +16,50 @@ public class UserValidationService : IUserValidationService
         _utilities = new Utilities();
     }
 
-    public async Task<(bool success, string message)> ValidateRegistrationAsync(RegisterViewModel model, IFormCollection form)
+    public async Task<(bool success, string message)> ValidateRegistrationAsync(
+        RegisterViewModel model,
+        IFormCollection form)
     {
         if (model == null)
         {
-            return (false, "Datos inválidos.");
+            return (false, "Invalid request data.");
         }
 
         var captchaResponse = form["g-recaptcha-response"];
 
         if (string.IsNullOrEmpty(captchaResponse))
         {
-            return (false, "Captcha no encontrado en el formulario.");
+            return (false, "reCAPTCHA token was not found.");
         }
 
         var isCaptchaValid = await _utilities.ValidateCaptcha(captchaResponse, _configuration);
         if (!isCaptchaValid)
         {
-            return (false, "Por favor, resuelva el reCAPTCHA para continuar.");
+            return (false, "Please complete the reCAPTCHA to continue.");
         }
 
-        if (string.IsNullOrWhiteSpace(model.Username) || string.IsNullOrWhiteSpace(model.Email) || string.IsNullOrWhiteSpace(model.Password))
+        if (string.IsNullOrWhiteSpace(model.Username) ||
+            string.IsNullOrWhiteSpace(model.Email) ||
+            string.IsNullOrWhiteSpace(model.Password))
         {
-            return (false, "Por favor, ingrese todos los datos.");
+            return (false, "Please fill in all required fields.");
         }
 
         if (!Utilities.IsValidEmail(model.Email))
         {
-            return (false, "Ingrese un correo electrónico válido.");
+            return (false, "Please enter a valid email address.");
         }
 
         if (model.Password.Length < 6)
         {
-            return (false, "La contraseña debe tener al menos 6 caracteres.");
+            return (false, "Password must be at least 6 characters long.");
         }
 
         if (model.Password != model.ConfirmPassword)
         {
-            return (false, "Las contraseñas no coinciden.");
+            return (false, "Passwords do not match.");
         }
 
-        return (true, "Validación exitosa");
+        return (true, "Validation successful.");
     }
 }
